@@ -2,96 +2,55 @@
 
 ## State
 
-**ACTIVE — M33.1 / ISSUE #69**
+**REPAIR — OFFLINE ONLY — M33.1 / ISSUE #69 / PR #79**
 
-This is the concise operator-facing control surface. The matching machine-readable authority is [`docs/CONTROL_STATE.json`](docs/CONTROL_STATE.json); CI requires them to agree.
+Projection of [`docs/CONTROL_STATE.json`](docs/CONTROL_STATE.json), revision 4. Owner direction of September 7 is recorded in Issue #83. The Issue #66 reset remains accepted through PR #67; Issue #70 originally activated M33.1. Only the bounded offline repair pass is resumed.
 
-The Issue #66 reset was accepted and merged through PR #67 at `592876fefde118b5325bbb5b4949eeb1490cdf6c`. Issue #70 activates the first bounded product gate under the new Review-Control/Codex operating model.
+## Active assignment
 
-## Active milestone
-
-- **M33:** AI-Driven Fixture Synthesis Proof
-- **Milestone issue:** #68
-- **Status:** ACTIVE
-
-## Sole active gate
-
+- **Milestone:** M33 — AI-Driven Fixture Synthesis Proof
 - **Gate:** M33.1 — Native product reconstruction and explicit live-AI mode
 - **Issue:** #69
-- **Lane:** product implementation
-- **Implementation PR:** none yet
-- **Expected branch:** Codex creates one focused branch only after `CONTINUE`
-- **Review authority:** FXD Review-Control chat
-- **Builder/repair session:** Codex
+- **Implementation PR:** #79 — draft, repair required, not accepted
+- **Branch:** `agent/m33-1-native-product-reconstruction`
+- **Audited starting head:** `686486b0cfd6e1f062a3074b8d1319a0e84549b4`
+- **Pass:** M33.1-R1 — F05, F06, F11 only
+- **Work order:** [CODEX_REPAIR_PASS_01.md](docs/CODEX_REPAIR_PASS_01.md)
+- **Audit:** [FXD_FULL_AUDIT_2026-09-07.md](docs/FXD_FULL_AUDIT_2026-09-07.md)
+- **Queued repairs:** [FXD_REPAIR_PLAN_2026-09-07.md](docs/FXD_REPAIR_PLAN_2026-09-07.md)
 
-## IN SCOPE
+Keep the existing CAD engine, STEP import, native workspace and engineering modules. Repair legacy proposal-bearing project migration and the classification answer/execution flow. First synchronize current main into the same PR branch as explicitly allowed by the work order. Codex may copy current governance from main but cannot change its policy or budgets.
 
-- A versioned, CAD-neutral, source-SHA-bound product/manufacturing reconstruction contract.
-- Exact component, transform, body, OCP face/hole/axis/plane evidence needed by the first supported fixture family.
-- Bounded classifications such as plate/sheet, tube/structural, formed, machined, purchased, or `unknown`.
-- Candidate datum/contact features, weld candidates, engineer-confirmed weld intent, confidence, provenance, and unresolved ambiguity.
-- Explicit `ai_design_live` and `deterministic_offline` execution modes.
-- One intentional, bounded OpenAI request only when live mode is selected and triggered.
-- Visible and persisted provider/model/request/provenance state.
-- Live-AI failure that stops clearly with **no deterministic substitute**.
-- Opt-in exactly-one-request live acceptance separate from ordinary offline CI.
-- Focused tests, full repository checks, pinned OCP evidence, native UI evidence, privacy/secret checks, and exact-head review.
+## Development and API boundary
 
-## OUT OF SCOPE
+- **Implementation surface:** ChatGPT Codex Remote under the user's ChatGPT agentic allowance.
+- **Development API requests:** 0.
+- **Paid GitHub Codex dispatchers:** forbidden.
+- **Authorized product-runtime requests for this pass:** 0.
+- **Profile E request remains unspent** and unauthorized.
+- **`CONTINUE`, `test FXD`, `run the tests`, and `finish M33.1` do not authorize product-runtime API spending.**
+- No provider credentials, live opt-ins, live acceptance harness execution or real-provider calls. Use offline/synthetic-provider evidence.
+- Product-runtime API use requires a separate explicit owner instruction to run the live test and an exact-head bounded Review-Control authorization.
+- The retired paid dispatcher stays inert; current-main workflow and API-spend firewall checks must remain intact.
 
-- Final typed fixture-strategy design contract.
-- Strategy-to-OCP fixture authoring.
-- AI repair cycles.
-- Final fixture generation.
-- Multiple fixture families.
-- Universal CAD/manufacturing reconstruction.
-- Private fixture-library upload or public disclosure of Chris's fixture knowledge.
-- Customer/employer CAD in public tests, prompts, logs, screenshots, or CI.
-- Claude/Anthropic integration, review, audit, fallback, or tie-break use.
-- M33.2 or later work.
-- Production approval, release, billing, SaaS, or deployment.
-
-## Protected boundaries
-
-- Source CAD remains byte-immutable and source-SHA-bound.
-- Unsupported meaning remains `unknown`; material ambiguity asks a focused question or blocks.
-- Live mode is explicit and never inferred from environment variables alone.
-- The OpenAI model is explicitly configured; FXD never guesses or silently switches it.
-- Missing key/model, timeout, provider failure, malformed/quarantined response, or cancellation cannot produce a fake AI success.
-- Secrets and unrestricted provider content never enter persistence or public evidence.
-- Offline tests cannot claim live-provider proof.
-- Software evidence cannot approve fixture practicality or production use.
-- M32 / Issue #57 / PR #54 remains superseded and cannot be resumed as current work.
-
-## Budgets
+## Product-runtime ceilings, not authorization
 
 - **Live requests per acceptance run:** 1
 - **Automatic provider retries:** 0
 - **Repair requests in M33.1:** 0
 - **Maximum request timeout:** 60 seconds
-- **Model policy:** explicitly configured high-capability OpenAI model; no default guess or silent switch
+- **Model policy:** explicitly configured high-capability OpenAI model; no default guess
 
-These are ceilings, not targets. Missing or failed live-provider evidence blocks the live acceptance path; it does not authorize another request or a deterministic substitute.
+The current pass authorizes zero of those requests. No runtime model is selected by this setup.
 
-## Required evidence
+## Acceptance and exclusions
 
-- **A — repository/deterministic:** focused tests, full suite, `bash scripts/ci.sh`, `git diff --check`, governance/secret checks.
-- **B — real geometry:** pinned OCP reconstruction evidence and source immutability.
-- **C — native UI:** unmistakable LIVE / FAILED-NO-FALLBACK / OFFLINE states.
-- **E — live provider:** one intentional OpenAI request, explicit model/provider, request count, timeout/retry evidence, safe provenance, no fallback.
+Offline R1 completion returns AWAITING_REVIEW; it does not complete M33.1. Current-head Windows interaction and Profile E remain outstanding until actually evidenced. No product PR merge, M33.2 advancement, later queued repairs, final strategy authoring, wholesale rewrite, production release, SaaS or billing is authorized in this pass.
 
-Profile E requires an intentional live request. Offline CI does not satisfy it.
-
-## Held and superseded
-
-- M32 / Issue #57 — SUPERSEDED
-- PR #54 — closed unmerged; branch and evidence preserved for selective salvage
-- Issue #59 — closed as superseded
-- Issue #63 — closed as superseded
-- `docs/MILESTONE_STATE.json` — frozen historical evidence only
+M32 / Issue #57 remains SUPERSEDED. PR #54 — closed unmerged, selective salvage only. Issues #59/#63 stay superseded. `docs/MILESTONE_STATE.json` remains frozen historical evidence.
 
 ## Next valid action
 
 **CONTINUE**
 
-Codex must read Issue #69 and repository truth, implement the smallest complete M33.1 vertical slice on one focused draft PR, run the required evidence, and stop `AWAITING_REVIEW`. It must not begin M33.2, merge, advance, or reinterpret the gate.
+ChatGPT Codex Remote reads the first work order, reconciles current main into PR #79, repairs F05/F06/F11 with offline evidence and stops AWAITING_REVIEW. The setup itself does not launch a Codex session or a paid workflow.

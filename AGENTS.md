@@ -11,11 +11,11 @@ The product is not complete merely because it can author valid solids. It must p
 Read and obey these sources in order:
 
 1. Explicit current instruction from Chris Hilton for a product/authority decision
-2. current `main` `docs/CONTROL_STATE.json` — machine-readable current gate and legal state
-3. current `main` `CURRENT.md` — concise human-facing projection; CI requires it to agree with control state
+2. `docs/CONTROL_STATE.json` — machine-readable current gate and legal state
+3. `CURRENT.md` — concise human-facing projection; CI requires it to agree with control state
 4. The active GitHub issue and any explicitly linked decision record
 5. `docs/PRODUCT_DIRECTION.md`
-6. current `main` `docs/OPERATOR_PROTOCOL.md`
+6. `docs/OPERATOR_PROTOCOL.md`
 7. `docs/ENGINEERING_CONSTITUTION.md`
 8. `docs/AI_DRIVEN_SYNTHESIS_ARCHITECTURE.md`
 9. `docs/ARCHITECTURE.md`
@@ -24,9 +24,9 @@ Read and obey these sources in order:
 12. `docs/ENGINEERING_TEAM.md`
 13. `BACKLOG.md` and historical records
 
-A lower source cannot silently override a higher source. Conflict means `BLOCKED`. Implementation-branch copies of governance files may be stale; current `main` wins for changing project state.
+A lower source cannot silently override a higher source. Conflict means `BLOCKED`.
 
-`docs/MILESTONE_STATE.json` is frozen pre-reset history under Issue #66. Its Git blob identity is pinned in current `main` `docs/CONTROL_STATE.json`. It cannot select current work, reopen superseded Issue #57 / PR #54, or override the active gate.
+`docs/MILESTONE_STATE.json` is frozen pre-reset history under Issue #66. Its Git blob identity is pinned in `docs/CONTROL_STATE.json`. It cannot select current work, reopen superseded Issue #57 / PR #54, or override the active gate.
 
 ## Operating model
 
@@ -43,28 +43,32 @@ A lower source cannot silently override a higher source. Conflict means `BLOCKED
 - Claude / Anthropic is not an implementation, audit, review, fallback, or tie-break route.
 - The retired GitHub Actions Foreman, automatic milestone selector, and paid GitHub Codex dispatcher must fail closed.
 
-Read current `main` `docs/OPERATOR_PROTOCOL.md` before any implementation or review action.
+Read `docs/OPERATOR_PROTOCOL.md` before any implementation or review action.
 
-## Current gate — HELD
+## Current gate — REPAIR, OFFLINE ONLY
 
-The Issue #66 reset was accepted through PR #67. Issue #70 activated M33.1, and PR #79 is the one preserved implementation PR:
+The Issue #66 reset was accepted through PR #67. Issue #70 activated M33.1, and PR #79 is the one implementation PR:
 
 - **Milestone:** M33 — AI-Driven Fixture Synthesis Proof
 - **Gate:** M33.1 — Native product reconstruction and explicit live-AI mode
 - **Active issue:** #69
 - **Implementation PR:** #79
 - **Branch:** `agent/m33-1-native-product-reconstruction`
-- **State:** `HELD — COST CONTROL`
+- **State:** `REPAIR — OFFLINE ONLY`
+- **Resume authority:** Issue #83, owner direction September 7, 2026
+- **Bounded pass:** M33.1-R1 / `docs/CODEX_REPAIR_PASS_01.md`, findings F05/F06/F11 only
+- **Product-runtime requests authorized now:** 0
 
-While current `main` has `product_implementation_held: true`, Codex must not modify product code, run a repair pass, make a product live-AI request, merge, or advance. It stops `BLOCKED` and waits for explicit owner resume recorded by Review-Control.
+The existing CAD engine, STEP import and engineering modules remain in place. Read the full audit and repair plan linked from CURRENT.md. Later queued work is not implementation authority. R1 includes non-destructive current-main synchronization on the same PR; this is not permission to merge the product PR.
+
+While `product_implementation_held` is true, Codex must not modify product code, run a repair pass, make a product live-AI request, merge, or advance. It stops `BLOCKED` and waits for explicit owner resume recorded by Review-Control.
 
 ## Permanent development/API cost boundary
 
 - Normal FXD implementation and repair work uses **ChatGPT Codex Remote under the user's ChatGPT agentic allowance**.
 - GitHub Actions and repository automation must **never** invoke `openai/codex-action` for FXD implementation, repair, review, or orchestration.
 - GitHub Actions and repository automation must **never** receive or forward `OPENAI_API_KEY` for development/orchestration.
-- `CONTINUE`, `test FXD`, `run the tests`, and `finish M33.1` never authorize product-runtime API spend.
-- Repository `OPENAI_API_KEY` use is reserved for explicit **FXD product-runtime** live-AI evidence/use after a separate owner instruction and Review-Control authorization.
+- Repository `OPENAI_API_KEY` use is reserved for explicit **FXD product-runtime** live-AI evidence/use, such as a separately authorized Profile E acceptance run on an exact reviewed head.
 - Product-runtime API use requires explicit Review-Control authorization, explicit provider/model selection, the gate's request budget, and fail-closed provenance.
 - CI must fail if a paid development dispatcher or repository workflow API-key route is reintroduced.
 
@@ -90,7 +94,7 @@ Mode cannot be inferred from environment variables or silently changed.
 In live mode:
 
 - provider and model are explicitly configured;
-- exactly one bounded request occurs only after an intentional operator action and separate API-spend authorization;
+- exactly one bounded request occurs only after an intentional operator action;
 - automatic retries are zero;
 - fallback is disabled;
 - the UI and persisted provenance show provider, model, attempted yes/no, status, time, contract versions, safe failure category, and usage/cost when available;
@@ -136,16 +140,16 @@ Fixture precedents must express product-feature-to-fixture-response relationship
 - Dependencies and provider services require explicit licensing/cost/security boundaries.
 - `bash scripts/ci.sh` remains the repository health command.
 
-## Codex behavior after a future `CONTINUE`
+## Codex behavior after `CONTINUE`
 
-A `CONTINUE` is legal only after Review-Control records `product_implementation_held: false` on current `main`.
+A `CONTINUE` is legal only after Review-Control records `product_implementation_held: false`.
 
-1. Confirm repository identity, current `main` authority, branch, active issue, current PR, and clean/non-destructive worktree handling.
+1. Confirm repository identity, branch, active issue, current PR, and clean/non-destructive worktree handling.
 2. Read the authority stack above.
 3. Repair unresolved blocking findings on the same PR before new implementation.
 4. Repair required CI failures only inside the active gate.
 5. Otherwise implement the smallest complete active-gate slice.
-6. Run the evidence required for that bounded pass, excluding any live provider request unless separately authorized.
+6. Run the evidence required for that bounded pass.
 7. Push exact evidence to the same branch/PR.
 8. Stop `AWAITING_REVIEW`.
 

@@ -34,7 +34,7 @@ Historical milestone registries, roadmaps, binders, handoffs, and stale branch g
 
 Before editing:
 
-- confirm repository identity is `kool1160/fxd-fixture-design`;
+- confirm repository identity is `DumpsterFireWorks/fxd-fixture-design` (GitHub repository ID 1299678045; the former `kool1160` URL redirects);
 - confirm current `main` authority was read successfully;
 - confirm the expected branch and PR;
 - inspect tracked and untracked work so no local change is lost;
@@ -42,7 +42,11 @@ Before editing:
 - confirm the active issue is open and its scope is unambiguous;
 - stop `BLOCKED` if repository truth conflicts, current `main` is held, or a duplicate lane exists.
 
-Use non-destructive Git. Never force-push, rewrite shared history, delete branches, discard unknown work, or merge.
+Use non-destructive Git. Never force-push, rewrite shared history, delete branches, discard unknown work, or merge a product PR into main. Only a current-main work order may authorize integrating main into the existing implementation branch.
+
+## Active bounded work order
+
+Read `docs/CODEX_REPAIR_PASS_01.md` from current main. Revision 4 authorizes M33.1-R1 only: F05/F06/F11 on PR #79, offline. It explicitly permits non-destructive main-into-PR synchronization of known stale governance before product edits; use current-main policy copies, preserve product work and cost checks, and stop on conflicts beyond that rule. This is the sole exception to the branch-conflict stop above. It never overrides a newer hold, permits PR merge into main, or allows independent edits to protected policy.
 
 ## API spend authorization firewall
 

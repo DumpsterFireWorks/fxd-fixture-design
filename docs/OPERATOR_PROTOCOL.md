@@ -8,7 +8,7 @@ Make FXD simple to operate without turning Chris into a human message bus or all
 
 One repository. One active gate. One implementation PR.
 
-Current state is stored in current `main` `docs/CONTROL_STATE.json` and projected concisely in current `main` `CURRENT.md`. They must agree before any work begins. On an implementation branch, current `main` control state outranks stale branch-local governance copies.
+Current state is stored in `docs/CONTROL_STATE.json` and projected concisely in `CURRENT.md`. They must agree before any work begins. On an implementation branch, current `main` control state outranks stale branch-local governance copies.
 
 ## Roles
 
@@ -62,6 +62,12 @@ Legal Review-Control output while held is:
 HOLD
 Reason: <one sentence>
 ```
+
+## Current bounded resumption — Issue #83
+
+Owner direction of September 7 resumes only offline pass M33.1-R1, defined in `docs/CODEX_REPAIR_PASS_01.md`. Current main permits non-destructive synchronization into the existing PR #79 branch before product edits. Known stale branch governance may be replaced with current-main copies during that integration; no authority, scope or budget may be invented. This explicit exception does not permit product PR merge or bypass a newer hold. If a conflict exceeds that synchronization rule, stop BLOCKED.
+
+Codex reads the full audit for context and repairs only F05/F06/F11. Later queued repairs require a separate Review-Control assignment. Authorized live product requests remain zero. Missing paid/Windows acceptance does not prevent reporting a completed offline pass as AWAITING_REVIEW, but it prevents claiming the complete product gate passed.
 
 ## Normal operating loop after resume
 

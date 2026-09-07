@@ -12,11 +12,13 @@ The first product focus is practical weld fixturing for sheet-metal, plate, tube
 
 ## Current status
 
-**M33 is active. M33.1 / Issue #69 is the sole active product gate.**
+**M33 is active. M33.1 / Issue #69 / draft PR #79 is REPAIR — OFFLINE ONLY.**
 
-The Issue #66 reset was accepted through PR #67. Issue #70 advances the authoritative control state to product implementation under the Review-Control/Codex model. The machine-readable authority is [`docs/CONTROL_STATE.json`](docs/CONTROL_STATE.json); the concise scope surface is [`CURRENT.md`](CURRENT.md). CI requires them to agree.
+The Issue #66 reset was accepted through PR #67; Issue #70 originally activated M33.1. Owner direction recorded in Issue #83 resumes only pass M33.1-R1 on the same branch/PR. [CONTROL_STATE](docs/CONTROL_STATE.json) revision 4 and [CURRENT](CURRENT.md) are current authority.
 
-M33.1 is deliberately narrower than final fixture synthesis. It must establish trustworthy source-SHA-bound product reconstruction and make live OpenAI design mode explicit, undeniable, and fail-closed without silent deterministic fallback. The implementation PR does not exist until Review-Control issues `CONTINUE` and Codex opens one focused draft PR.
+Read the [full audit](docs/FXD_FULL_AUDIT_2026-09-07.md), [repair sequence](docs/FXD_REPAIR_PLAN_2026-09-07.md), and [first Codex work order](docs/CODEX_REPAIR_PASS_01.md). Existing STEP import, CAD engine, native workspace and fixture capabilities are retained. The first pass repairs legacy project migration, classification decisions lost at execution, and branch/acceptance integration. Later work is queued, not active.
+
+Normal implementation uses **ChatGPT Codex Remote under the user's ChatGPT agentic allowance**. The paid GitHub Codex dispatcher is retired. Development API requests and authorized live product requests for this pass are both zero. Profile E remains unspent and requires a separate explicit owner authorization. No product merge or M33.2 advancement is authorized by this offline pass.
 
 The previous Issue #57 / PR #54 path remains closed as superseded. It proved substantial OCP, VTK, geometry, validation, persistence, fixture-library, and export capability, but it did not prove FXD's product value: AI remained advisory while deterministic templates generated the fixture, and repeated human reviews rejected fixture practicality.
 
@@ -61,21 +63,23 @@ See [`docs/AI_DRIVEN_SYNTHESIS_ARCHITECTURE.md`](docs/AI_DRIVEN_SYNTHESIS_ARCHIT
 
 ## Development model
 
-FXD uses the same simple project-control shape proven in LaserX Design Studio:
+FXD uses a simple Review-Control/Codex loop:
 
-> **Review-Control decides and reviews. GitHub remembers. Codex implements one bounded gate. Pull requests hold the evidence.**
+> **Review-Control decides and reviews. GitHub remembers. ChatGPT Codex Remote implements one bounded gate. Pull requests hold the evidence.**
 
-Normal loop:
+The current legal action is bounded `CONTINUE` for M33.1-R1 only. Codex returns `AWAITING_REVIEW`; no live request, product PR merge or M33.2 advancement is authorized. Any future owner hold still stops implementation.
+
+After explicit owner resume and synchronized control-state update, the normal loop is:
 
 ```text
 Review-Control -> CONTINUE
-Codex -> AWAITING_REVIEW
+ChatGPT Codex Remote -> AWAITING_REVIEW
 Review-Control -> CONTINUE | OWNER_DECISION | BLOCKED | COMPLETE
 ```
 
 One repository. One active gate. One implementation PR. Codex does not choose scope, merge, advance, deploy, or approve its own work. Claude/Anthropic is not part of the standard implementation or audit path.
 
-The former autonomous GitHub Actions Foreman and registry selector are retired and fail closed.
+The former autonomous GitHub Actions Foreman, historical registry selector, and paid GitHub Codex dispatcher are retired and fail closed. CI rejects active workflow routes that would reintroduce provider/Codex API development spending.
 
 Read [`docs/OPERATOR_PROTOCOL.md`](docs/OPERATOR_PROTOCOL.md) and [`AGENTS.md`](AGENTS.md) before working.
 
@@ -95,20 +99,20 @@ Read [`docs/OPERATOR_PROTOCOL.md`](docs/OPERATOR_PROTOCOL.md) and [`AGENTS.md`](
 
 Historical milestone registries, roadmaps, binders, and handoffs remain evidence and context. They do not override current control state.
 
-## Active gate — M33.1
+## Active gate — M33.1 (offline repair)
 
-Issue #69 must prove:
+Issue #69 must eventually prove:
 
 1. a versioned, deterministic, source-SHA-bound native product/manufacturing reconstruction;
 2. visible uncertainty and focused blockers/questions instead of guessed manufacturing meaning;
 3. explicit `ai_design_live` and `deterministic_offline` modes;
 4. visible and persisted provider/model/request/provenance state;
-5. one intentional bounded OpenAI request when live mode is selected;
+5. one intentional bounded OpenAI request when live mode is selected and separately authorized;
 6. missing configuration, timeout, provider failure, quarantine, cancellation, or malformed output produces **AI DESIGN — FAILED — NO FALLBACK USED**;
 7. offline operation never claims a live AI result;
 8. focused, full, pinned-OCP, native-UI, privacy, secret, and exactly-one-live-request evidence.
 
-M33.1 does not author the final AI-driven fixture. Strategy-to-OCP authoring belongs to M33.2.
+M33.1 does not author the final AI-driven fixture. Strategy-to-OCP authoring belongs to M33.2. The current offline pass does not waive these acceptance requirements.
 
 ## Full M33 proof
 
