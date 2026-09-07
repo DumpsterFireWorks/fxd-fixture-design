@@ -12,13 +12,13 @@ The first product focus is practical weld fixturing for sheet-metal, plate, tube
 
 ## Current status
 
-**M33 is active. M33.1 / Issue #69 / draft PR #79 is HELD — COST CONTROL.**
+**M33 is active. M33.1 / Issue #69 / draft PR #79 is REPAIR — OFFLINE ONLY.**
 
-The Issue #66 reset was accepted through PR #67 and Issue #70 activated M33.1. Owner direction now holds product implementation while preserving draft PR #79 on `agent/m33-1-native-product-reconstruction`. The machine-readable authority is [`docs/CONTROL_STATE.json`](docs/CONTROL_STATE.json) revision 3; the concise projection is [`CURRENT.md`](CURRENT.md). CI requires them to agree.
+The Issue #66 reset was accepted through PR #67; Issue #70 originally activated M33.1. Owner direction recorded in Issue #83 resumes only pass M33.1-R1 on the same branch/PR. [CONTROL_STATE](docs/CONTROL_STATE.json) revision 4 and [CURRENT](CURRENT.md) are current authority.
 
-M33.1 remains deliberately narrower than final fixture synthesis. It must establish trustworthy source-SHA-bound product reconstruction and make live OpenAI design mode explicit, undeniable, and fail-closed without silent deterministic fallback. The implementation PR already exists as #79 and must not be repaired, merged, or advanced while the hold is active.
+Read the [full audit](docs/FXD_FULL_AUDIT_2026-09-07.md), [repair sequence](docs/FXD_REPAIR_PLAN_2026-09-07.md), and [first Codex work order](docs/CODEX_REPAIR_PASS_01.md). Existing STEP import, CAD engine, native workspace and fixture capabilities are retained. The first pass repairs legacy project migration, classification decisions lost at execution, and branch/acceptance integration. Later work is queued, not active.
 
-Normal FXD implementation and repair work uses **ChatGPT Codex Remote under the user's ChatGPT agentic allowance**. The paid GitHub Codex dispatcher is retired. GitHub workflows may not invoke Codex/provider API routes for development or receive repository OpenAI API credentials. Those credentials are reserved for separately authorized FXD product-runtime live-AI evidence/use. The M33.1 Profile E request remains unspent and prohibited while held.
+Normal implementation uses **ChatGPT Codex Remote under the user's ChatGPT agentic allowance**. The paid GitHub Codex dispatcher is retired. Development API requests and authorized live product requests for this pass are both zero. Profile E remains unspent and requires a separate explicit owner authorization. No product merge or M33.2 advancement is authorized by this offline pass.
 
 The previous Issue #57 / PR #54 path remains closed as superseded. It proved substantial OCP, VTK, geometry, validation, persistence, fixture-library, and export capability, but it did not prove FXD's product value: AI remained advisory while deterministic templates generated the fixture, and repeated human reviews rejected fixture practicality.
 
@@ -67,7 +67,7 @@ FXD uses a simple Review-Control/Codex loop:
 
 > **Review-Control decides and reviews. GitHub remembers. ChatGPT Codex Remote implements one bounded gate. Pull requests hold the evidence.**
 
-While the current cost-control hold is active, the legal action is `HOLD`; no implementation/repair pass, product-runtime live request, merge of PR #79, or M33.2 advancement is allowed.
+The current legal action is bounded `CONTINUE` for M33.1-R1 only. Codex returns `AWAITING_REVIEW`; no live request, product PR merge or M33.2 advancement is authorized. Any future owner hold still stops implementation.
 
 After explicit owner resume and synchronized control-state update, the normal loop is:
 
@@ -99,7 +99,7 @@ Read [`docs/OPERATOR_PROTOCOL.md`](docs/OPERATOR_PROTOCOL.md) and [`AGENTS.md`](
 
 Historical milestone registries, roadmaps, binders, and handoffs remain evidence and context. They do not override current control state.
 
-## Preserved gate — M33.1 (HELD)
+## Active gate — M33.1 (offline repair)
 
 Issue #69 must eventually prove:
 
@@ -112,7 +112,7 @@ Issue #69 must eventually prove:
 7. offline operation never claims a live AI result;
 8. focused, full, pinned-OCP, native-UI, privacy, secret, and exactly-one-live-request evidence.
 
-M33.1 does not author the final AI-driven fixture. Strategy-to-OCP authoring belongs to M33.2. While held, these are preserved acceptance requirements rather than implementation authority.
+M33.1 does not author the final AI-driven fixture. Strategy-to-OCP authoring belongs to M33.2. The current offline pass does not waive these acceptance requirements.
 
 ## Full M33 proof
 

@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.validate_control_state import _validate_workflow_cost_boundary, validate
+from scripts.validate_control_state import CURRENT_DOCS, _validate_workflow_cost_boundary, validate
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,15 +22,60 @@ on:\n  workflow_dispatch:\njobs:\n  retired:\n    permissions:\n      contents: 
 
 
 class GovernanceResetTests(unittest.TestCase):
+    def test_offline_resume_rejects_unauthorized_scope_spend_and_state_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            paths = set(CURRENT_DOCS) | {
+                "docs/CONTROL_STATE.json", "docs/MILESTONE_STATE.json",
+                "docs/CODEX_REPAIR_PASS_01.md", "docs/FXD_FULL_AUDIT_2026-09-07.md",
+                "docs/FXD_REPAIR_PLAN_2026-09-07.md", "scripts/fxd-backlog.mjs",
+            }
+            paths.update(str(path.relative_to(ROOT)) for path in (ROOT / ".github/workflows").glob("*"))
+            for relative in paths:
+                destination = root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / relative, destination)
+            self.assertEqual([], validate(root))
+            state_path = root / "docs/CONTROL_STATE.json"
+            original = state_path.read_text(encoding="utf-8")
+            mutations = (
+                ("product_runtime_authorization", "authorized", True),
+                ("product_runtime_authorization", "live_requests", 1),
+                ("implementation_authorization", "mode", "live"),
+                ("implementation_authorization", "issue", 70),
+                ("implementation_authorization", "findings", ["F05", "F06", "F11", "F07"]),
+                ("implementation_authorization", "product_merge_authorized", True),
+                ("implementation_authorization", "next_gate_authorized", True),
+                ("implementation_authorization", "stop_state", "COMPLETE"),
+                ("budgets", "development_api_requests", 1),
+                ("active_gate", "pull_request", 54),
+                (None, "product_implementation_held", True),
+                (None, "state", "ACTIVE"),
+            )
+            for section, key, value in mutations:
+                with self.subTest(section=section, key=key):
+                    state = json.loads(original)
+                    target = state[section] if section else state
+                    target[key] = value
+                    state_path.write_text(json.dumps(state), encoding="utf-8")
+                    self.assertTrue(validate(root))
+            state_path.write_text(original, encoding="utf-8")
+            current_path = root / "CURRENT.md"
+            current_path.write_text(current_path.read_text(encoding="utf-8").replace(
+                "REPAIR — OFFLINE ONLY — M33.1 / ISSUE #69 / PR #79",
+                "HELD — COST CONTROL — M33.1 / ISSUE #69 / PR #79",
+            ), encoding="utf-8")
+            self.assertTrue(validate(root))
+
     def test_authoritative_control_state_validates(self) -> None:
         self.assertEqual([], validate(ROOT))
 
-    def test_m33_1_is_held_on_the_existing_implementation_pr(self) -> None:
+    def test_m33_1_resumes_only_offline_repairs_on_existing_pr(self) -> None:
         state = json.loads((ROOT / "docs" / "CONTROL_STATE.json").read_text(encoding="utf-8"))
-        self.assertEqual(3, state["revision"])
-        self.assertEqual(70, state["authority_issue"])
-        self.assertEqual("HELD", state["state"])
-        self.assertTrue(state["product_implementation_held"])
+        self.assertEqual(4, state["revision"])
+        self.assertEqual(83, state["authority_issue"])
+        self.assertEqual("REPAIR", state["state"])
+        self.assertFalse(state["product_implementation_held"])
         self.assertEqual("owner", state["hold"]["authority"])
         self.assertEqual("cost_control", state["hold"]["reason"])
         self.assertEqual(
@@ -41,15 +86,15 @@ class GovernanceResetTests(unittest.TestCase):
                 "issue": 69,
                 "pull_request": 79,
                 "branch": "agent/m33-1-native-product-reconstruction",
-                "expected_pr_state": "open_draft_held_cost_control",
+                "expected_pr_state": "open_draft_repair_offline_only",
                 "objective": state["active_gate"]["objective"],
             },
             state["active_gate"],
         )
         self.assertEqual("ACTIVE", state["product_milestone"]["status"])
-        self.assertEqual("HELD", state["product_milestone"]["active_gate"]["status"])
-        self.assertTrue(state["next_valid_action"].startswith("HOLD."))
-        self.assertNotIn("CONTINUE", state["next_valid_action"])
+        self.assertEqual("REPAIR", state["product_milestone"]["active_gate"]["status"])
+        self.assertTrue(state["next_valid_action"].startswith("CONTINUE."))
+        self.assertIn("Profile E unauthorized", state["next_valid_action"])
 
     def test_development_route_is_chatgpt_codex_remote_with_zero_api_budget(self) -> None:
         state = json.loads((ROOT / "docs" / "CONTROL_STATE.json").read_text(encoding="utf-8"))
@@ -77,36 +122,36 @@ class GovernanceResetTests(unittest.TestCase):
             budgets["model_policy"],
         )
 
-    def test_current_state_projects_hold_and_cost_boundary(self) -> None:
+    def test_current_state_projects_offline_repair_and_cost_boundary(self) -> None:
         current = (ROOT / "CURRENT.md").read_text(encoding="utf-8")
         for token in (
-            "HELD — COST CONTROL — M33.1 / ISSUE #69 / PR #79",
+            "REPAIR — OFFLINE ONLY — M33.1 / ISSUE #69 / PR #79",
             "Implementation PR:** #79",
             "ChatGPT Codex Remote",
             "Development API requests:** 0",
             "Paid GitHub Codex dispatchers:** forbidden",
             "Profile E request remains unspent",
-            "**HOLD**",
+            "**CONTINUE**",
         ):
             self.assertIn(token, current)
         self.assertNotIn("Implementation PR:** none yet", current)
-        self.assertNotIn("**CONTINUE**", current)
+        self.assertNotIn("**HOLD**", current)
 
-    def test_all_current_projection_docs_show_the_hold_and_existing_pr(self) -> None:
+    def test_all_current_projections_show_offline_repair_and_existing_pr(self) -> None:
         expected = {
             "README.md": (
-                "HELD — COST CONTROL",
+                "REPAIR — OFFLINE ONLY",
                 "draft PR #79",
                 "ChatGPT Codex Remote",
             ),
             "docs/FOREMAN_SETUP.md": (
-                "HELD — COST CONTROL",
+                "REPAIR — OFFLINE ONLY",
                 "**Implementation PR:** #79",
                 "ChatGPT Codex Remote",
             ),
             "docs/MILESTONE_CONTRACT.md": (
                 "**Implementation PR:** #79",
-                "**Status:** HELD — COST CONTROL",
+                "**Status:** REPAIR — OFFLINE ONLY",
                 "Development/API cost boundary",
             ),
         }
