@@ -45,16 +45,21 @@ A lower source cannot silently override a higher source. Conflict means `BLOCKED
 
 Read `docs/OPERATOR_PROTOCOL.md` before any implementation or review action.
 
-## Current gate — HELD
+## Current gate — REPAIR, OFFLINE ONLY
 
-The Issue #66 reset was accepted through PR #67. Issue #70 activated M33.1, and PR #79 is the one preserved implementation PR:
+The Issue #66 reset was accepted through PR #67. Issue #70 activated M33.1, and PR #79 is the one implementation PR:
 
 - **Milestone:** M33 — AI-Driven Fixture Synthesis Proof
 - **Gate:** M33.1 — Native product reconstruction and explicit live-AI mode
 - **Active issue:** #69
 - **Implementation PR:** #79
 - **Branch:** `agent/m33-1-native-product-reconstruction`
-- **State:** `HELD — COST CONTROL`
+- **State:** `REPAIR — OFFLINE ONLY`
+- **Resume authority:** Issue #83, owner direction September 7, 2026
+- **Bounded pass:** M33.1-R1 / `docs/CODEX_REPAIR_PASS_01.md`, findings F05/F06/F11 only
+- **Product-runtime requests authorized now:** 0
+
+The existing CAD engine, STEP import and engineering modules remain in place. Read the full audit and repair plan linked from CURRENT.md. Later queued work is not implementation authority. R1 includes non-destructive current-main synchronization on the same PR; this is not permission to merge the product PR.
 
 While `product_implementation_held` is true, Codex must not modify product code, run a repair pass, make a product live-AI request, merge, or advance. It stops `BLOCKED` and waits for explicit owner resume recorded by Review-Control.
 
@@ -135,7 +140,7 @@ Fixture precedents must express product-feature-to-fixture-response relationship
 - Dependencies and provider services require explicit licensing/cost/security boundaries.
 - `bash scripts/ci.sh` remains the repository health command.
 
-## Codex behavior after a future `CONTINUE`
+## Codex behavior after `CONTINUE`
 
 A `CONTINUE` is legal only after Review-Control records `product_implementation_held: false`.
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-**The former autonomous “FXD Foreman” and paid GitHub Codex dispatcher are retired. FXD M33.1 is currently HELD — COST CONTROL.**
+**The former autonomous “FXD Foreman” and paid GitHub Codex dispatcher are retired. FXD M33.1 is REPAIR — OFFLINE ONLY.**
 
 Do not run a workflow that selects a milestone, plans, implements, reviews, and publishes inside one agent context. Do not create a GitHub/API-backed Codex implementation route. Both conflict with the accepted Review-Control/ChatGPT Codex Remote separation and can create stale, duplicate, or paid work outside the owner-approved path.
 
@@ -21,20 +21,20 @@ Read [`docs/OPERATOR_PROTOCOL.md`](OPERATOR_PROTOCOL.md).
 
 Read repository-root `CURRENT.md` and `docs/CONTROL_STATE.json` before any action.
 
-The Issue #66 reset is accepted. Issue #70 activated M33.1, but explicit owner direction now holds that gate for cost control:
+The Issue #66 reset is accepted. Issue #70 activated M33.1; Issue #83 records the owner-authorized offline repair resumption:
 
 - **M33.1 / Issue #69 — Native product reconstruction and explicit live-AI mode**
-- **State:** HELD — COST CONTROL
+- **State:** REPAIR — OFFLINE ONLY
 - **Implementation PR:** #79, draft and preserved
 - **Branch:** `agent/m33-1-native-product-reconstruction`
-- no Codex implementation/repair pass is authorized while the hold is active;
-- no Profile E/product-runtime paid request is authorized while held;
-- PR #79 must not merge or advance to M33.2 while held;
+- only M33.1-R1 in `docs/CODEX_REPAIR_PASS_01.md` is authorized;
+- no Profile E/product-runtime paid request is authorized in this pass;
+- PR #79 must not merge or advance to M33.2 in this pass;
 - superseded Issue #57 / PR #54 remains closed and may be used only as reviewed salvage evidence.
 
-Resumption requires explicit owner instruction followed by Review-Control synchronizing `docs/CONTROL_STATE.json`, `CURRENT.md`, Issue #69, and PR state before issuing `CONTINUE`.
+Issue #83 records the current owner direction. Current-main revision 4, CURRENT.md and Issue #69 select the same bounded work order. Codex first performs the explicitly authorized current-main synchronization on PR #79, preserving cost controls.
 
-## Codex entry point after resume
+## Codex entry point
 
 The standing implementation prompt is:
 
@@ -72,7 +72,7 @@ FXD_AI_PROVIDER=openai
 
 These values are product-runtime configuration only. They must not be forwarded into GitHub Actions or repository development automation. Do not commit keys. Use a dedicated OpenAI project with conservative limits and alerts.
 
-The model name is explicitly configured; FXD must not guess, auto-route, or silently switch it. Live AI Design must display provider/model/request provenance and fail closed when configuration or provider execution fails. Deterministic/offline mode remains separately selectable and labeled. Exactly-one-request live acceptance is opt-in, separate from ordinary CI, and prohibited while the current cost-control hold remains active.
+The model name is explicitly configured; FXD must not guess, auto-route, or silently switch it. Live AI Design must display provider/model/request provenance and fail closed when configuration or provider execution fails. Deterministic/offline mode remains separately selectable and labeled. Exactly-one-request live acceptance is opt-in, separate from ordinary CI, and unauthorized in the current offline pass.
 
 ## Public repository warning
 

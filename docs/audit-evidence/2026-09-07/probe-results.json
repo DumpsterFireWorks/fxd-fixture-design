@@ -1,0 +1,168 @@
+[
+  {
+    "case": "off_part_contacts",
+    "result": {
+      "contact_minimum_mm": 10000,
+      "findings": [],
+      "part_maximum_mm": 120,
+      "rank": 6,
+      "strategy_valid": true
+    },
+    "checkout": "main"
+  },
+  {
+    "case": "unlocated_other_components",
+    "result": {
+      "component_count": 4,
+      "contacted_components": [
+        "BRACKET_A"
+      ],
+      "rank": 6,
+      "strategy_valid": true
+    },
+    "checkout": "main"
+  },
+  {
+    "case": "m30_build_collision",
+    "result": {
+      "authored_count": 10,
+      "findings": [],
+      "overlapping_authored_components": [
+        "m30-clamp-plate",
+        "m30-gusset",
+        "m30-riser"
+      ],
+      "status": "valid"
+    },
+    "checkout": "main"
+  },
+  {
+    "case": "interface_overlap",
+    "result": {
+      "clearance_mm": 0.0,
+      "findings": [],
+      "kernel_overlap": true
+    },
+    "checkout": "main"
+  },
+  {
+    "case": "provider_context",
+    "result": {
+      "contains_images": false,
+      "contains_reconstruction": false,
+      "keys": [
+        "alternatives",
+        "annotations",
+        "components",
+        "customer_tooling",
+        "deterministic_findings",
+        "fixture_candidates",
+        "intent",
+        "manufacturing_orientation",
+        "placements",
+        "source"
+      ]
+    },
+    "checkout": "main"
+  },
+  {
+    "case": "genuine_v5_saved",
+    "result": {
+      "format": "fxd-neutral-project-v5",
+      "main_reload_succeeded": true,
+      "source_sha256": "cd99d4908ac35d061e0847a6e05a6b04aaa1d05b717dbcbd19f6e659d2337cfa"
+    },
+    "checkout": "main"
+  },
+  {
+    "case": "off_part_contacts",
+    "result": {
+      "contact_minimum_mm": 10000,
+      "findings": [],
+      "part_maximum_mm": 120,
+      "rank": 6,
+      "strategy_valid": true
+    },
+    "checkout": "held"
+  },
+  {
+    "case": "unlocated_other_components",
+    "result": {
+      "component_count": 4,
+      "contacted_components": [
+        "BRACKET_A"
+      ],
+      "rank": 6,
+      "strategy_valid": true
+    },
+    "checkout": "held"
+  },
+  {
+    "case": "m30_build_collision",
+    "result": {
+      "authored_count": 10,
+      "findings": [],
+      "overlapping_authored_components": [
+        "m30-clamp-plate",
+        "m30-gusset",
+        "m30-riser"
+      ],
+      "status": "valid"
+    },
+    "checkout": "held"
+  },
+  {
+    "case": "interface_overlap",
+    "result": {
+      "clearance_mm": 0.0,
+      "findings": [],
+      "kernel_overlap": true
+    },
+    "checkout": "held"
+  },
+  {
+    "case": "provider_context",
+    "result": {
+      "contains_images": false,
+      "contains_reconstruction": false,
+      "keys": [
+        "alternatives",
+        "annotations",
+        "components",
+        "customer_tooling",
+        "deterministic_findings",
+        "fixture_candidates",
+        "intent",
+        "manufacturing_orientation",
+        "placements",
+        "source"
+      ]
+    },
+    "checkout": "held"
+  },
+  {
+    "case": "genuine_v5_load",
+    "result": {
+      "error": "invalid FXD project: proposal identity does not match proposal evidence",
+      "error_type": "ProjectFormatError"
+    },
+    "checkout": "held"
+  },
+  {
+    "case": "genuine_v5_without_proposal_load",
+    "result": {
+      "succeeded": true
+    },
+    "checkout": "held"
+  },
+  {
+    "case": "classification_override_lost",
+    "result": {
+      "classification_after_execution": "unknown",
+      "failure": "reconstruction_blocked",
+      "fake_provider_calls": 0,
+      "resolved_before_execution": true
+    },
+    "checkout": "held"
+  }
+]

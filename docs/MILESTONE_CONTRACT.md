@@ -40,7 +40,7 @@ The accepted transition:
 - preserves M32 history and useful technical evidence for selective salvage;
 - freezes `docs/MILESTONE_STATE.json` as byte-preserved historical evidence only.
 
-Issue #70 activated M33 / Issue #68 and M33.1 / Issue #69. Explicit owner direction now places M33.1 on **HELD — COST CONTROL** with draft PR #79 preserved as its sole implementation PR. The hold does not cancel or complete the gate; it removes implementation, paid product-runtime acceptance, merge, and advancement authority until explicit owner resume.
+Issue #70 activated M33 / Issue #68 and M33.1 / Issue #69. The August cost-control hold is historical. Owner direction recorded in Issue #83 resumes only **REPAIR — OFFLINE ONLY**, pass M33.1-R1 on draft PR #79. Live product requests remain unauthorized; full original gate acceptance remains required. The repair plan queues later prerequisites without activating them.
 
 ## Legal states
 
@@ -81,10 +81,10 @@ No completion claim may use M32 software evidence as proof that FXD can design a
 
 - **Issue:** #68
 - **Status:** ACTIVE
-- **Current gate:** M33.1 / Issue #69 / PR #79 — **HELD — COST CONTROL**
+- **Current gate:** M33.1 / Issue #69 / PR #79 — **REPAIR — OFFLINE ONLY**
 - **Goal:** prove one representative fixture from trustworthy product reconstruction through a live AI-authored strategy, real OCP authoring, deterministic validation, at most one bounded AI repair, persistence/provenance, and qualified human practicality acceptance.
 
-M33 is not Complete because its first gate is held and incomplete. Later gates remain planned and unauthorized until Review-Control accepts evidence and advances them after a legal resume.
+M33 is not Complete because its first gate remains incomplete. Later gates remain planned and unauthorized until Review-Control accepts evidence and advances them after a legal resume.
 
 ## Ordered M33 gates
 
@@ -93,9 +93,9 @@ M33 is not Complete because its first gate is held and incomplete. Later gates r
 - **Issue:** #69
 - **Implementation PR:** #79
 - **Branch:** `agent/m33-1-native-product-reconstruction`
-- **Status:** HELD — COST CONTROL
+- **Status:** REPAIR — OFFLINE ONLY
 
-After explicit owner resume, prove:
+The full gate must prove:
 
 - source-SHA-bound native product/manufacturing reconstruction;
 - material ambiguity is visible and blocks or asks a focused question;
@@ -105,7 +105,7 @@ After explicit owner resume, prove:
 - one opt-in live acceptance path makes exactly one bounded request;
 - zero automatic provider retries and zero repair requests in this gate.
 
-While held: no Codex implementation/repair pass, no Profile E live request, no PR #79 merge, and no M33.2 advancement is authorized.
+Current pass: only F05/F06/F11 repairs under `docs/CODEX_REPAIR_PASS_01.md`. No Profile E live request, PR #79 merge or M33.2 advancement is authorized. Offline success returns AWAITING_REVIEW, not gate completion.
 
 M33.1 does not authorize the final fixture-strategy schema, strategy-to-OCP authoring, fixture generation, or repair cycles.
 

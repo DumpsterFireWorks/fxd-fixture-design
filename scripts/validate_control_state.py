@@ -10,8 +10,8 @@ from typing import Any
 SCHEMA = "fxd-control-state-v1"
 RESET_MERGE = "592876fefde118b5325bbb5b4949eeb1490cdf6c"
 LEGACY_BLOB = "f667797f1ea59e508ebd46b97cc89061f56b1c1a"
-HELD_PR = 79
-HELD_BRANCH = "agent/m33-1-native-product-reconstruction"
+IMPLEMENTATION_PR = 79
+IMPLEMENTATION_BRANCH = "agent/m33-1-native-product-reconstruction"
 
 CURRENT_DOCS = (
     "AGENTS.md", "CURRENT.md", "README.md", "docs/PRODUCT_DIRECTION.md",
@@ -97,26 +97,26 @@ def _validate_workflow_cost_boundary(root: Path, errors: list[str]) -> None:
                 errors.append(f"retired paid dispatcher retains active route {forbidden!r}")
 
 
-def _validate_hold_projections(root: Path, errors: list[str]) -> None:
-    """Require every current operator projection to agree with the held PR state."""
+def _validate_repair_projections(root: Path, errors: list[str]) -> None:
+    """Require every current operator projection to agree with the offline repair PR state."""
     required = {
         "README.md": (
-            "HELD — COST CONTROL",
+            "REPAIR — OFFLINE ONLY",
             "draft PR #79",
             "ChatGPT Codex Remote",
             "paid GitHub Codex dispatcher is retired",
         ),
         "docs/FOREMAN_SETUP.md": (
-            "HELD — COST CONTROL",
+            "REPAIR — OFFLINE ONLY",
             "**Implementation PR:** #79",
             "ChatGPT Codex Remote",
-            "no Profile E/product-runtime paid request is authorized while held",
+            "no Profile E/product-runtime paid request is authorized in this pass",
         ),
         "docs/MILESTONE_CONTRACT.md": (
             "**Implementation PR:** #79",
-            "**Status:** HELD — COST CONTROL",
+            "**Status:** REPAIR — OFFLINE ONLY",
             "## Development/API cost boundary",
-            "While held: no Codex implementation/repair pass",
+            "Current pass: only F05/F06/F11 repairs",
         ),
     }
     forbidden = {
@@ -128,7 +128,7 @@ def _validate_hold_projections(root: Path, errors: list[str]) -> None:
         text = (root / relative).read_text(encoding="utf-8")
         for token in tokens:
             if token not in text:
-                errors.append(f"{relative} does not project held PR #79 state: missing {token!r}")
+                errors.append(f"{relative} does not project offline repair PR #79 state: missing {token!r}")
         for token in forbidden.get(relative, ()):
             if token.casefold() in text.casefold():
                 errors.append(f"{relative} retains contradictory pre-hold claim {token!r}")
@@ -143,10 +143,10 @@ def validate(root: Path) -> list[str]:
 
     required_root = {
         "schema_version": SCHEMA,
-        "revision": 3,
-        "authority_issue": 70,
-        "state": "HELD",
-        "product_implementation_held": True,
+        "revision": 4,
+        "authority_issue": 83,
+        "state": "REPAIR",
+        "product_implementation_held": False,
         "operator_protocol": "docs/OPERATOR_PROTOCOL.md",
         "current_human_surface": "CURRENT.md",
     }
@@ -160,6 +160,30 @@ def validate(root: Path) -> list[str]:
     resume = hold.get("resume_condition")
     if not isinstance(resume, str) or "Explicit owner instruction" not in resume:
         errors.append("hold.resume_condition must require explicit owner instruction")
+
+    authorization = mapping(data, "implementation_authorization", errors)
+    expected_authorization = {
+        "authority": "owner", "issue": 83, "date": "2026-09-07",
+        "mode": "offline_only", "pass_id": "M33.1-R1",
+        "work_order": "docs/CODEX_REPAIR_PASS_01.md",
+        "findings": ["F05", "F06", "F11"], "stop_state": "AWAITING_REVIEW",
+        "synchronize_current_main": True, "product_merge_authorized": False,
+        "next_gate_authorized": False,
+    }
+    for key, expected in expected_authorization.items():
+        if authorization.get(key) != expected:
+            errors.append(f"implementation_authorization.{key} must be {expected!r}")
+    if hold.get("lifted_by_issue") != 83:
+        errors.append("historical hold must reference owner resume Issue #83")
+    runtime = mapping(data, "product_runtime_authorization", errors)
+    if runtime.get("authorized") is not False or runtime.get("live_requests") != 0:
+        errors.append("product_runtime_authorization must deny all live requests in this pass")
+    for relative in (
+        "docs/CODEX_REPAIR_PASS_01.md", "docs/FXD_FULL_AUDIT_2026-09-07.md",
+        "docs/FXD_REPAIR_PLAN_2026-09-07.md",
+    ):
+        if not (root / relative).is_file():
+            errors.append(f"required audit/repair authority is missing: {relative}")
 
     reset = mapping(data, "accepted_reset", errors)
     for key, expected in {
@@ -181,9 +205,9 @@ def validate(root: Path) -> list[str]:
         "milestone": 33,
         "id": "M33.1",
         "issue": 69,
-        "pull_request": HELD_PR,
-        "branch": HELD_BRANCH,
-        "expected_pr_state": "open_draft_held_cost_control",
+        "pull_request": IMPLEMENTATION_PR,
+        "branch": IMPLEMENTATION_BRANCH,
+        "expected_pr_state": "open_draft_repair_offline_only",
     }
     for key, expected in expected_gate.items():
         if gate.get(key) != expected:
@@ -211,8 +235,8 @@ def validate(root: Path) -> list[str]:
     child = milestone.get("active_gate")
     if not isinstance(child, dict) or (
         child.get("id"), child.get("issue"), child.get("status")
-    ) != ("M33.1", 69, "HELD"):
-        errors.append("product_milestone.active_gate must hold only M33.1 / Issue #69")
+    ) != ("M33.1", 69, "REPAIR"):
+        errors.append("product_milestone.active_gate must select offline repair only for M33.1 / Issue #69")
 
     budgets = mapping(data, "budgets", errors)
     expected_budgets = {
@@ -263,13 +287,15 @@ def validate(root: Path) -> list[str]:
 
     current = (root / "CURRENT.md").read_text(encoding="utf-8")
     for token in (
-        "HELD — COST CONTROL — M33.1 / ISSUE #69 / PR #79",
+        "REPAIR — OFFLINE ONLY — M33.1 / ISSUE #69 / PR #79",
         "Implementation PR:** #79",
         "ChatGPT Codex Remote",
         "Development API requests:** 0",
         "Paid GitHub Codex dispatchers:** forbidden",
         "Profile E request remains unspent",
-        "**HOLD**",
+        "**CONTINUE**",
+        "Authorized product-runtime requests for this pass:** 0",
+        "CODEX_REPAIR_PASS_01.md",
         "Live requests per acceptance run:** 1",
         "Automatic provider retries:** 0",
         "Repair requests in M33.1:** 0",
@@ -278,15 +304,20 @@ def validate(root: Path) -> list[str]:
     ):
         if token not in current:
             errors.append(f"CURRENT.md is missing {token!r}")
-    for token in ("Implementation PR:** none yet", "**CONTINUE**"):
+    for token in ("Implementation PR:** none yet", "**HOLD**", "HELD — COST CONTROL — M33.1"):
         if token in current:
             errors.append(f"CURRENT.md retains unsafe active token {token!r}")
 
     next_action = data.get("next_valid_action")
-    if not isinstance(next_action, str) or not next_action.startswith("HOLD."):
-        errors.append("next_valid_action must be HOLD")
+    if not isinstance(next_action, str) or not next_action.startswith("CONTINUE."):
+        errors.append("next_valid_action must be bounded CONTINUE")
     if isinstance(next_action, str) and "Profile E" not in next_action:
-        errors.append("next_valid_action must hold Profile E")
+        errors.append("next_valid_action must leave Profile E unauthorized")
+
+    if isinstance(next_action, str):
+        for token in ("M33.1-R1", "F05/F06/F11", "AWAITING_REVIEW", "Profile E unauthorized"):
+            if token not in next_action:
+                errors.append(f"next_valid_action lacks bounded repair token {token!r}")
 
     for relative in CURRENT_DOCS:
         try:
@@ -304,7 +335,7 @@ def validate(root: Path) -> list[str]:
                 if stale.casefold() in text.casefold():
                     errors.append(f"{relative} retains stale activation claim: {stale}")
 
-    _validate_hold_projections(root, errors)
+    _validate_repair_projections(root, errors)
 
     foreman = (root / ".github/workflows/fxd-foreman.yml").read_text(encoding="utf-8")
     for token in ("RETIRED BY ISSUE #66", "contents: read", "exit 1"):
@@ -333,7 +364,7 @@ def main() -> int:
         for error in errors:
             print(f"- {error}", file=sys.stderr)
         return 1
-    print("FXD control state validated: M33.1 / Issue #69 / PR #79 HELD for cost control; paid development API routes forbidden.")
+    print("FXD control state validated: M33.1 / Issue #69 / PR #79 REPAIR offline only; paid development API routes forbidden.")
     return 0
 
 
