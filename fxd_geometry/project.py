@@ -179,12 +179,14 @@ def _migrate_legacy_geometry_references(
                            for item in original.recommendations if item.geometry_reference is not None)
         replace(FxdProject._annotations(migrate(data["annotations"]), product),
                 permitted_locating_surfaces=references).validate_references(product)
-    migrated = migrate({key: value for key, value in data.items()
-                        if key != "fixture_proposal"})
+    editable_data = {key: value for key, value in data.items()
+                     if key != "fixture_proposal"}
+    migrated = migrate(editable_data)
     if not isinstance(migrated, dict):
         raise ProjectFormatError("legacy project root must be an object")
+    references_changed = migrated != editable_data
     migrated["fixture_proposal"] = original_proposal
-    if migrated != data:
+    if references_changed:
         evidence = {key: data.get(key) for key in (
             "format", "source_sha256", "fixture_proposal", "fixture_build",
             "decisions", "revisions", "approved_revision", "validations",

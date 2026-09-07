@@ -49,6 +49,18 @@ def classified_case(kind="holed-plate"):
 
 
 class LegacyMigrationTests(unittest.TestCase):
+    def test_absent_proposal_field_is_not_geometry_migration(self):
+        from fxd_geometry.project import _migrate_legacy_geometry_references
+        from fxd_geometry import product_from_workbench_document
+        project = FxdProject.load(LEGACY)
+        raw = project.to_dict()
+        raw.pop("fixture_proposal")
+        raw.pop("legacy_evidence")
+        document = load_step_for_workbench(project.product.source_bytes, source_name=project.product.source_name)
+        migrated = _migrate_legacy_geometry_references(raw, document, product_from_workbench_document(document))
+        self.assertNotIn("legacy_evidence", migrated)
+        self.assertEqual(migrated["validations"], raw["validations"])
+
     def test_real_v5_proposal_history_edits_and_source_survive_reload(self):
         before = LEGACY.read_bytes()
         original = json.loads(before)
