@@ -81,6 +81,7 @@ from fxd_geometry import (
     KernelOperationError,
     ManufacturingOrientation,
     ManufacturingOrientationError,
+    ManufacturingClassification,
     MissingIntentError,
     OcpKernel,
     OperationTiming,
@@ -109,6 +110,8 @@ from fxd_geometry import (
     recommend_orientations,
     reference_plane_orientation,
     proposal_engineering_context_identity,
+    prepare_proposal_project,
+    reconstruct_product,
     selected_mode_provenance,
     tooling_record_from_file,
 )
@@ -984,6 +987,24 @@ class FxdWorkbenchWindow(QMainWindow):
         )
         self.proposal_status.setWordWrap(True)
         self.proposal_status.setObjectName("fixtureProposalStatus")
+        self.reconstruction_inspect = QPushButton("Review product classification", host)
+        self.reconstruction_inspect.clicked.connect(self.review_product_classification)
+        self.classification_component = QComboBox(host)
+        self.classification_component.setObjectName("classificationComponent")
+        self.classification_question = QLabel("", host)
+        self.classification_question.setWordWrap(True)
+        self.classification_answer = QComboBox(host)
+        self.classification_answer.setObjectName("classificationAnswer")
+        for role in (ManufacturingClassification.UNKNOWN, ManufacturingClassification.PLATE_SHEET,
+                     ManufacturingClassification.TUBE_STRUCTURAL, ManufacturingClassification.FORMED,
+                     ManufacturingClassification.MACHINED, ManufacturingClassification.PURCHASED):
+            self.classification_answer.addItem(
+                "Unresolved / clear answer" if role == ManufacturingClassification.UNKNOWN
+                else role.value.replace("_", " / ").capitalize(), role.value,
+            )
+        self.classification_apply = QPushButton("Record classification answer", host)
+        self.classification_apply.clicked.connect(self.apply_classification_answer)
+        self.classification_component.currentIndexChanged.connect(self._classification_selection_changed)
         self.proposal_generate = QPushButton("Run Selected Design Mode", host)
         self.proposal_generate.setObjectName("generateFixtureProposal")
         self.proposal_generate.setProperty("role", "primary")
@@ -1081,6 +1102,11 @@ class FxdWorkbenchWindow(QMainWindow):
         mode_form.addRow("Execution mode:", self.proposal_execution_mode)
         layout.addLayout(mode_form)
         layout.addWidget(self.proposal_status)
+        layout.addWidget(self.reconstruction_inspect)
+        layout.addWidget(self.classification_component)
+        layout.addWidget(self.classification_question)
+        layout.addWidget(self.classification_answer)
+        layout.addWidget(self.classification_apply)
         layout.addWidget(self.proposal_generate)
         layout.addWidget(self.proposal_cancel)
         layout.addWidget(self.proposal_interview)
@@ -1861,6 +1887,47 @@ class FxdWorkbenchWindow(QMainWindow):
             "Execution mode selected explicitly; no provider request has occurred."
         )
 
+    def review_product_classification(self) -> None:
+        if self.document is None or self.workflow is None:
+            return
+        try:
+            self._persist_process_setup_from_controls()
+            project = prepare_proposal_project(self.document, self.workflow, current_project=self.project)
+            reconstruction = reconstruct_product(
+                self.document, project.product, project.workflow,
+                classification_overrides={item.component_identity: item.classification
+                                          for item in project.classification_decisions},
+            )
+            self._replace_project(project.with_product_reconstruction(reconstruction))
+            self._refresh_all()
+        except ValueError as exc:
+            self.proposal_status.setText(str(exc))
+
+    def _classification_selection_changed(self) -> None:
+        reconstruction = self.project.product_reconstruction if self.project else None
+        selected = self.classification_component.currentData()
+        question = next((item.prompt for item in reconstruction.unresolved_questions
+                         if selected in item.affected_identities), None) if reconstruction else None
+        self.classification_question.setText(question or (
+            "Review the component's manufacturing role. A new answer revokes dependent evidence."
+            if selected else "Review product classification to see component questions."
+        ))
+        answer = next((item.classification for item in self.project.classification_decisions
+                       if item.component_identity == selected), ManufacturingClassification.UNKNOWN) if self.project else ManufacturingClassification.UNKNOWN
+        self.classification_answer.setCurrentIndex(self.classification_answer.findData(answer.value))
+        self.classification_apply.setEnabled(bool(selected) and not self._proposal_tasks)
+
+    def apply_classification_answer(self) -> None:
+        if self.project is None or self.document is None or self._proposal_tasks:
+            return
+        selected = self.classification_component.currentData()
+        if selected is None:
+            return
+        answer = ManufacturingClassification(self.classification_answer.currentData())
+        self._persist_process_setup_from_controls()
+        self._replace_project(self.project.with_classification_answer(self.document, selected, answer))
+        self._refresh_all()
+
     def generate_fixture_proposal_now(self, provider: AiFixtureProvider | None = None):
         """Synchronous seam used by focused tests and non-threaded integrations."""
         if self.document is None or self.workflow is None:
@@ -2094,6 +2161,22 @@ class FxdWorkbenchWindow(QMainWindow):
             self.workflow and self.workflow.has_accepted_manufacturing_orientation()
         )
         self.proposal_generate.setEnabled(orientation_ready and not self._proposal_tasks)
+        self.reconstruction_inspect.setEnabled(orientation_ready and not self._proposal_tasks)
+        selected_component = self.classification_component.currentData()
+        self.classification_component.blockSignals(True)
+        self.classification_component.clear()
+        reconstruction = self.project.product_reconstruction if self.project else None
+        if reconstruction is not None:
+            for component in reconstruction.components:
+                self.classification_component.addItem(
+                    f"{component.name} — {component.manufacturing_classification.value.replace('_', ' ')}",
+                    component.identity,
+                )
+            index = self.classification_component.findData(selected_component)
+            if index >= 0:
+                self.classification_component.setCurrentIndex(index)
+        self.classification_component.blockSignals(False)
+        self._classification_selection_changed()
         if proposal is None:
             reconstruction = self.project.product_reconstruction if self.project else None
             if reconstruction is not None:

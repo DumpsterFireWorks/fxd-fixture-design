@@ -38,6 +38,42 @@ class ManufacturingClassification(str, Enum):
 
 
 @dataclass(frozen=True)
+class ClassificationDecision:
+    """An explicit answer, scoped to exact source, component and process intent."""
+
+    source_sha256: str
+    component_identity: str
+    workflow_context_identity: str | None
+    classification: ManufacturingClassification
+
+    def __post_init__(self) -> None:
+        if (len(self.source_sha256) != 64 or not self.component_identity
+                or not isinstance(self.classification, ManufacturingClassification)
+                or self.classification == ManufacturingClassification.UNKNOWN):
+            raise ProductReconstructionError("classification answer requires source, component and supported role")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "schema_version": "fxd-classification-decision-v1",
+            "source_sha256": self.source_sha256,
+            "component_identity": self.component_identity,
+            "workflow_context_identity": self.workflow_context_identity,
+            "classification": self.classification.value,
+        }
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, object]) -> "ClassificationDecision":
+        if data.get("schema_version") != "fxd-classification-decision-v1":
+            raise ProductReconstructionError("unsupported classification decision schema")
+        result = cls(str(data["source_sha256"]), str(data["component_identity"]),
+                     data["workflow_context_identity"],
+                     ManufacturingClassification(data["classification"]))
+        if result.classification == ManufacturingClassification.UNKNOWN:
+            raise ProductReconstructionError("unknown is not a resolved classification answer")
+        return result
+
+
+@dataclass(frozen=True)
 class ReconstructionQuestion:
     identity: str
     category: str
@@ -583,6 +619,10 @@ def reconstruct_product(
         raise ProductReconstructionError("workflow does not belong to reconstructed source")
 
     overrides = dict(classification_overrides or {})
+    if not set(overrides) <= {item.identity for item in product.components}:
+        raise ProductReconstructionError("classification answer references unknown component")
+    if any(not isinstance(value, ManufacturingClassification) for value in overrides.values()):
+        raise ProductReconstructionError("classification answer must use a supported role")
     face_map = _component_faces(document)
     topology_map = _component_topology(document)
     body_map = _component_bodies(document)

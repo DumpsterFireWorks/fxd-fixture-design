@@ -19,15 +19,18 @@ from fxd_geometry import (  # noqa: E402
 from fxd_geometry.project import FxdProject  # noqa: E402
 
 
-def synthetic_workflow():
+def synthetic_workflow(*, holed: bool = False):
     kernel = OcpKernel()
-    source = kernel.export_step(kernel.make_box((0, 0, 0), (120, 80, 8)))
+    shape = kernel.make_box((0, 0, 0), (120, 80, 8))
+    if holed:
+        shape = kernel.cut(shape, kernel.make_cylinder((60, 40, -1), 5, 10))
+    source = kernel.export_step(shape)
     document = load_step_for_workbench(source, source_name="m33-1-self-check.step")
     product = product_from_workbench_document(document)
     component = product.components[0]
     kernel_component = document.assembly.components[0]
-    bottom = kernel_component.faces[0]
-    front = next(face for face in kernel_component.faces if abs(sum(
+    bottom = next(face for face in kernel_component.faces if face.is_planar)
+    front = next(face for face in kernel_component.faces if face.is_planar and abs(sum(
         left * right for left, right in zip(bottom.normal, face.normal)
     )) < 0.1)
     bottom_ref = GeometryReference(

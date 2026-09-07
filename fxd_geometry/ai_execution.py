@@ -334,7 +334,11 @@ def execute_design_mode(
         )
     except MissingIntentError:
         raise
-    reconstruction = reconstruct_product(document, project.product, project.workflow)
+    reconstruction = reconstruct_product(
+        document, project.product, project.workflow,
+        classification_overrides={item.component_identity: item.classification
+                                  for item in project.classification_decisions},
+    )
     project = project.with_product_reconstruction(reconstruction)
 
     if mode == ExecutionMode.DETERMINISTIC_OFFLINE:

@@ -21,7 +21,9 @@ from fxd_geometry import (  # noqa: E402
 from scripts.m33_1_self_check import synthetic_workflow  # noqa: E402
 
 
-EXPECTED_REPOSITORY = "https://github.com/kool1160/fxd-fixture-design.git"
+EXPECTED_REPOSITORY = "DumpsterFireWorks/fxd-fixture-design"
+EXPECTED_REPOSITORY_ID = 1299678045
+ACCEPTED_REPOSITORY_NAMES = (EXPECTED_REPOSITORY, "kool1160/fxd-fixture-design")
 EXPECTED_BRANCH = "agent/m33-1-native-product-reconstruction"
 
 
@@ -40,22 +42,52 @@ def _refuse(reason: str) -> int:
     return 2
 
 
+def repository_preflight() -> tuple[str, str]:
+    """Read Git/GitHub identity only; independently testable without runtime opt-in."""
+    remote = _git("remote", "get-url", "origin")
+    accepted_urls = {
+        prefix + name + suffix
+        for name in ACCEPTED_REPOSITORY_NAMES
+        for prefix in ("https://github.com/", "git@github.com:", "ssh://git@github.com/")
+        for suffix in ("", ".git")
+    }
+    if remote.rstrip("/") not in accepted_urls:
+        raise ValueError("repository identity does not match the M33.1 work order")
+    metadata = json.loads(subprocess.check_output(
+        ("gh", "api", "repos/" + EXPECTED_REPOSITORY,
+         "--jq", "{id: .id, full_name: .full_name}"),
+        cwd=ROOT, text=True, stderr=subprocess.DEVNULL,
+    ))
+    # Resolve the supplied alias too: an accepted spelling alone is not identity.
+    supplied = next(name for name in ACCEPTED_REPOSITORY_NAMES if name in remote)
+    if supplied != EXPECTED_REPOSITORY:
+        alias = json.loads(subprocess.check_output(
+            ("gh", "api", "repos/" + supplied,
+             "--jq", "{id: .id, full_name: .full_name}"),
+            cwd=ROOT, text=True, stderr=subprocess.DEVNULL,
+        ))
+        if alias != metadata:
+            raise ValueError("former repository alias no longer resolves to the canonical identity")
+    if metadata != {"id": EXPECTED_REPOSITORY_ID, "full_name": EXPECTED_REPOSITORY}:
+        raise ValueError("canonical GitHub repository identity does not match")
+    branch = _git("branch", "--show-current")
+    head = _git("rev-parse", "HEAD")
+    if branch != EXPECTED_BRANCH:
+        raise ValueError("branch does not match the sole M33.1 implementation branch")
+    if _git("status", "--porcelain"):
+        raise ValueError("worktree must be clean so evidence binds to one exact head")
+    return branch, head
+
+
 def main() -> int:
     if os.environ.get("FXD_M33_1_LIVE_ACCEPTANCE") != "1":
         return _refuse("explicit opt-in is required")
     try:
-        remote = _git("remote", "get-url", "origin")
-        branch = _git("branch", "--show-current")
-        head = _git("rev-parse", "HEAD")
-        dirty = _git("status", "--porcelain")
+        branch, head = repository_preflight()
     except (OSError, subprocess.CalledProcessError):
         return _refuse("expected Git repository is unavailable")
-    if remote.rstrip("/") != EXPECTED_REPOSITORY.rstrip("/"):
-        return _refuse("repository identity does not match the M33.1 work order")
-    if branch != EXPECTED_BRANCH:
-        return _refuse("branch does not match the sole M33.1 implementation branch")
-    if dirty:
-        return _refuse("worktree must be clean so evidence binds to one exact head")
+    except (ValueError, TypeError):
+        return _refuse("repository, branch or clean-head identity preflight failed")
     api_key = os.environ.get("OPENAI_API_KEY", "").strip()
     model = os.environ.get("FXD_OPENAI_MODEL", "").strip()
     if not api_key or not model:
@@ -70,7 +102,7 @@ def main() -> int:
     evidence = outcome.provenance.to_dict()
     safe = {
         "schema": "fxd-m33-1-live-acceptance-v1",
-        "repository": "kool1160/fxd-fixture-design",
+        "repository": EXPECTED_REPOSITORY,
         "branch": branch,
         "head": head,
         "source_sha256": document.source_sha256,

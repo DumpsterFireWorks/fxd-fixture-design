@@ -176,6 +176,38 @@ class _OpenAiSuccessProvider:
 
 
 class QtWorkbenchTests(unittest.TestCase):
+    def test_classification_question_answer_execute_save_reopen(self):
+        from tests.test_m33_repair_r1 import classified_case
+        from tests.test_m33_ai_execution import _LiveProvider
+        from fxd_geometry import ExecutionMode, ManufacturingClassification
+        document, workflow = classified_case()
+        window = self.window
+        window.document, window.workflow = document, workflow
+        window._set_process_setup(workflow.setup)
+        window.viewport.load_document(document)
+        window._refresh_all()
+        window.reconstruction_inspect.click()
+        self.assertTrue(window.project.product_reconstruction.blocked)
+        self.assertIn("Confirm the manufacturing role", window.classification_question.text())
+        window.classification_answer.setCurrentIndex(window.classification_answer.findData("plate_sheet"))
+        window.classification_apply.click()
+        self.assertFalse(window.project.product_reconstruction.blocked)
+        baseline = window.generate_fixture_proposal_now()
+        provider = _LiveProvider(ai_response_from_proposal(baseline.proposal))
+        window.proposal_execution_mode.setCurrentIndex(window.proposal_execution_mode.findData(ExecutionMode.AI_DESIGN_LIVE.value))
+        outcome = window.generate_fixture_proposal_now(provider=provider)
+        self.assertEqual(outcome.provider_state.value, "ai_proposal_generated")
+        self.assertEqual(provider.request_count, 1)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "answered.fxd.json"
+            window.save_project_path(path)
+            window.load_project_path(path)
+        self.assertEqual(window.project.classification_decisions[0].classification, ManufacturingClassification.PLATE_SHEET)
+        self.assertEqual(window.project.ai_execution.request_count, 1)
+        self.assertFalse(window.project.product_reconstruction.blocked)
+        self.assertEqual(window.classification_answer.currentData(), "plate_sheet")
+        self.assertEqual(window.document.source_bytes, document.source_bytes)
+
     @classmethod
     def setUpClass(cls):
         cls.application = create_application([])

@@ -29,7 +29,10 @@ if TYPE_CHECKING:
     from .ai_fixture_engineer import FixtureProposal
     from .fabrication_workflow import FixtureBuildPlan
     from .interactive_workflow import InteractiveWorkflow
-    from .product_reconstruction import ProductReconstruction
+    from .product_reconstruction import (
+        ClassificationDecision, ManufacturingClassification, ProductReconstruction,
+    )
+    from .workbench import WorkbenchDocument
 
 
 class ProjectFormatError(ValueError):
@@ -165,9 +168,54 @@ def _migrate_legacy_geometry_references(
             return migrated
         return value
 
-    migrated = migrate(data)
+    # Proposal hashes bind references, citations, decisions and context together.
+    # Validate the original first and retain it verbatim as historical evidence;
+    # never recursively rewrite one part of an already reviewed proposal.
+    original_proposal = data.get("fixture_proposal")
+    if original_proposal:
+        from .ai_fixture_engineer import FixtureProposal
+        original = FixtureProposal.from_dict(original_proposal)
+        references = tuple(GeometryReference(**migrate_reference(dict(item.geometry_reference.__dict__)))
+                           for item in original.recommendations if item.geometry_reference is not None)
+        replace(FxdProject._annotations(migrate(data["annotations"]), product),
+                permitted_locating_surfaces=references).validate_references(product)
+    migrated = migrate({key: value for key, value in data.items()
+                        if key != "fixture_proposal"})
     if not isinstance(migrated, dict):
         raise ProjectFormatError("legacy project root must be an object")
+    migrated["fixture_proposal"] = original_proposal
+    if migrated != data:
+        evidence = {key: data.get(key) for key in (
+            "format", "source_sha256", "fixture_proposal", "fixture_build",
+            "decisions", "revisions", "approved_revision", "validations",
+            "drawing_intent", "optimization_intent",
+        )}
+        payload = json.dumps(evidence, sort_keys=True, separators=(",", ":"))
+        migrated["legacy_evidence"] = {
+            "schema_version": "fxd-legacy-project-evidence-v1",
+            "payload": payload, "sha256": hashlib.sha256(payload.encode()).hexdigest(),
+        }
+        migrated["approved_revision"] = None
+        migrated["drawing_intent"] = None
+        migrated["optimization_intent"] = None
+        if original_proposal:
+            from .ai_fixture_engineer import (
+                ProposalAuditEvent, RecommendationDecision, proposal_identity,
+            )
+            proposal = FixtureProposal.from_dict(original_proposal)
+            proposal = replace(
+                proposal, proposal_identity="", proposal_decision="pending",
+                recommendations=tuple(replace(item, decision=RecommendationDecision.PROPOSED)
+                                      for item in proposal.recommendations),
+                audit_history=proposal.audit_history + (ProposalAuditEvent(
+                    "legacy_identity_migration", proposal.proposal_identity,
+                    "Historical geometry references retained; regenerate proposal and review again.",
+                    proposal.provenance.generated_at_utc, proposal.proposal_identity,
+                ),),
+            )
+            migrated["fixture_proposal"] = replace(
+                proposal, proposal_identity=proposal_identity(proposal),
+            ).to_dict()
     return migrated
 
 
@@ -267,8 +315,30 @@ class FxdProject:
     fixture_proposal: "FixtureProposal | None" = None
     product_reconstruction: "ProductReconstruction | None" = None
     ai_execution: "AiExecutionProvenance | None" = None
+    legacy_evidence: dict[str, str] | None = None
+    classification_decisions: tuple["ClassificationDecision", ...] = ()
 
     def __post_init__(self) -> None:
+        from .product_reconstruction import reconstruction_workflow_context_identity
+        if len({item.component_identity for item in self.classification_decisions}) != len(self.classification_decisions):
+            raise ProjectFormatError("duplicate classification answer")
+        for answer in self.classification_decisions:
+            if (answer.source_sha256 != self.product.source_sha256
+                    or answer.component_identity not in {item.identity for item in self.product.components}
+                    or answer.workflow_context_identity != reconstruction_workflow_context_identity(self.workflow)):
+                raise ProjectFormatError("classification answer is stale or references unknown component")
+        if self.legacy_evidence is not None:
+            if self.legacy_evidence.get("schema_version") != "fxd-legacy-project-evidence-v1":
+                raise ProjectFormatError("unsupported legacy history schema")
+            payload = self.legacy_evidence["payload"]
+            if hashlib.sha256(payload.encode()).hexdigest() != self.legacy_evidence["sha256"]:
+                raise ProjectFormatError("legacy history identity does not match evidence")
+            historical = json.loads(payload)
+            if historical["source_sha256"] != self.product.source_sha256:
+                raise ProjectFormatError("legacy history source does not match project")
+            if historical.get("fixture_proposal"):
+                from .ai_fixture_engineer import FixtureProposal
+                FixtureProposal.from_dict(historical["fixture_proposal"])
         if self.annotations.source_sha256 != self.product.source_sha256:
             raise ProjectFormatError("annotations do not match the immutable source geometry")
         self.annotations.validate_references(self.product)
@@ -365,6 +435,37 @@ class FxdProject:
             self, drawing_intent=None, optimization_intent=None,
             fixture_build=None, ai_execution=None,
         )
+
+    def with_classification_answer(
+        self, document: "WorkbenchDocument", component_identity: str,
+        classification: "ManufacturingClassification",
+    ) -> "FxdProject":
+        """Answer (or clear with UNKNOWN) one manufacturing question and revoke derived authority."""
+        from .product_reconstruction import (
+            ClassificationDecision, ManufacturingClassification, reconstruct_product,
+            reconstruction_workflow_context_identity,
+        )
+        if component_identity not in {item.identity for item in self.product.components}:
+            raise ProjectFormatError("classification answer references unknown component")
+        if not isinstance(classification, ManufacturingClassification):
+            raise ProjectFormatError("classification answer must use a supported role")
+        answers = tuple(item for item in self.classification_decisions
+                        if item.component_identity != component_identity)
+        if classification != ManufacturingClassification.UNKNOWN:
+            answers += (ClassificationDecision(
+                self.product.source_sha256, component_identity,
+                reconstruction_workflow_context_identity(self.workflow), classification,
+            ),)
+        candidate = replace(
+            self, classification_decisions=tuple(sorted(answers, key=lambda item: item.component_identity)),
+            product_reconstruction=None, ai_execution=None, fixture_proposal=None,
+            fixture_build=None, drawing_intent=None, optimization_intent=None, approved_revision=None,
+        )
+        reconstruction = reconstruct_product(
+            document, self.product, self.workflow,
+            classification_overrides={item.component_identity: item.classification for item in answers},
+        )
+        return candidate.with_product_reconstruction(reconstruction)
 
     def with_product_reconstruction(
         self, reconstruction: "ProductReconstruction",
@@ -486,13 +587,19 @@ class FxdProject:
         if workflow.source_sha256 != self.product.source_sha256:
             raise ProjectFormatError("interactive workflow does not match the immutable source geometry")
         reconstruction = self.product_reconstruction
+        from .product_reconstruction import reconstruction_workflow_context_identity
+        answers = tuple(item for item in self.classification_decisions
+                        if item.workflow_context_identity == reconstruction_workflow_context_identity(workflow))
         if (reconstruction is not None
                 and reconstruction.stale_reason(self.product.source_sha256, workflow) is not None):
             reconstruction = None
         candidate = replace(
             self, workflow=workflow, product_reconstruction=reconstruction,
+            classification_decisions=answers,
             ai_execution=None, approved_revision=None,
         )
+        if answers != self.classification_decisions:
+            candidate = candidate._invalidate_derived_intent()
         if candidate.fixture_proposal is not None:
             from .ai_fixture_engineer import (
                 proposal_engineering_context_identity, validate_fixture_proposal,
@@ -555,6 +662,8 @@ class FxdProject:
             payload["product_reconstruction"] = self.product_reconstruction.to_dict()
         if self.ai_execution is not None:
             payload["ai_execution"] = self.ai_execution.to_dict()
+        if self.classification_decisions:
+            payload["classification_decisions"] = [item.to_dict() for item in self.classification_decisions]
         encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
         return "rev-" + hashlib.sha256(encoded.encode()).hexdigest()[:16]
 
@@ -826,6 +935,8 @@ class FxdProject:
                 self.product_reconstruction.to_dict() if self.product_reconstruction else None
             ),
             "ai_execution": self.ai_execution.to_dict() if self.ai_execution else None,
+            "legacy_evidence": self.legacy_evidence,
+            "classification_decisions": [item.to_dict() for item in self.classification_decisions],
             "validations": validations,
             "concept_corrections": {
                 concept.identity: [correction.__dict__ for correction in concept.corrections]
@@ -893,6 +1004,7 @@ class FxdProject:
             workflow_data = data.get("interactive_workflow")
             workflow = None
             orientation_revalidation_required = False
+            identity_migration_required = False
             if workflow_data:
                 from .interactive_workflow import (
                     InteractiveWorkflow, product_from_workbench_document,
@@ -902,6 +1014,7 @@ class FxdProject:
                 product = product_from_workbench_document(document)
                 if project_format in LEGACY_PROJECT_FORMATS:
                     data = _migrate_legacy_geometry_references(data, document, product)
+                    identity_migration_required = data.get("legacy_evidence") is not None
                     workflow_data = data.get("interactive_workflow")
                 workflow = InteractiveWorkflow.from_dict(workflow_data)
                 orientation_revalidation_required = not workflow.has_accepted_manufacturing_orientation()
@@ -915,6 +1028,10 @@ class FxdProject:
                 placement=placement, workflow=workflow,
             )
             reconstruction_data = data.get("product_reconstruction")
+            from .product_reconstruction import ClassificationDecision
+            project = replace(project, classification_decisions=tuple(
+                ClassificationDecision.from_dict(item) for item in data.get("classification_decisions", ())
+            ))
             if reconstruction_data:
                 from .product_reconstruction import ProductReconstruction
                 reconstruction = ProductReconstruction.from_dict(reconstruction_data)
@@ -961,7 +1078,7 @@ class FxdProject:
                 if layer not in project.hidden_layers:
                     project = project.toggle_layer(layer)
             saved_validations = data.get("validations", {})
-            if not orientation_revalidation_required:
+            if not (orientation_revalidation_required or identity_migration_required):
                 for concept in project.concepts:
                     saved = saved_validations.get(concept.identity)
                     if saved:
@@ -979,11 +1096,15 @@ class FxdProject:
                 for item in data.get("revisions", []))
             restored = replace(project, decisions=decisions,
                                revisions=saved_revisions or project.revisions,
-                               approved_revision=(None if orientation_revalidation_required
+                               approved_revision=(None if (orientation_revalidation_required or identity_migration_required)
                                                   else data.get("approved_revision")),
                                drawing_intent=data.get("drawing_intent"),
                                optimization_intent=data.get("optimization_intent"),
-                               workflow=workflow)
+                               workflow=workflow, legacy_evidence=data.get("legacy_evidence"))
+            if identity_migration_required:
+                restored = restored._record_revision(
+                    saved_revisions[-1].revision_id if saved_revisions else None,
+                )
             if restored.approved_revision is not None and restored.approved_revision != restored.revision_id:
                 raise ProjectFormatError("saved approval does not belong to the restored revision")
             return restored

@@ -1717,12 +1717,20 @@ def _reanalyze_preserving_authored_state(
         item.revision_id: item
         for item in current_project.revisions + project.revisions
     }
+    from .product_reconstruction import reconstruction_workflow_context_identity
+    context = reconstruction_workflow_context_identity(project.workflow)
+    reconstruction = current_project.product_reconstruction
+    if reconstruction is not None and reconstruction.stale_reason(project.product.source_sha256, project.workflow):
+        reconstruction = None
     return replace(
         project, hidden_layers=current_project.hidden_layers,
         decisions=current_project.decisions,
         revisions=tuple(revisions.values()), approved_revision=None,
-        product_reconstruction=current_project.product_reconstruction,
-        ai_execution=current_project.ai_execution,
+        product_reconstruction=reconstruction,
+        ai_execution=current_project.ai_execution if reconstruction is not None else None,
+        classification_decisions=tuple(item for item in current_project.classification_decisions
+                                       if item.workflow_context_identity == context),
+        legacy_evidence=current_project.legacy_evidence,
     )
 
 
