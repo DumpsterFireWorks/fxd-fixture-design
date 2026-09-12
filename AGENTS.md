@@ -1,3 +1,21 @@
+# Owner development hold — 2026-09-12
+
+**ON HOLD — IMPORTANT ONGOING PROJECT — PLANNED TO RESUME — NO DATE SET.**
+
+Chris explicitly paused development of this project to focus on ChatBack, ChatBack-Model and Cynthia. This is the current owner instruction and overrides older instructions below to continue, repair, audit, merge, deploy or advance. Preserve the unfinished gate, branches, PRs, code and research. Resume only on explicit owner instruction; no automatic restart.
+
+This is a development hold only. It does not authorize archiving, deletion, decommissioning, service shutdown, deployment or infrastructure changes. Preserve running services and existing use. 
+
+Machine-readable control records product_implementation_held=true; the retained REPAIR gate is the saved technical stopping point, not execution permission.
+
+Full owner decision: [portfolio priorities and shared-server boundary](https://github.com/DumpsterFireWorks/Repo-Index-on-GitHub/blob/main/OWNER_PROJECT_PRIORITIES_2026-09-12.md).
+
+---
+
+## Preserved pre-hold project record
+
+The original record below retains progress, evidence and restart context. Its prior next-action/active-work wording is suspended by the owner hold above.
+
 # FXD Agent Instructions
 
 ## Mission
