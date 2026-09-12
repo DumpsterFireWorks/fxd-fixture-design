@@ -1,16 +1,15 @@
 {
   "schema_version": "fxd-control-state-v1",
-  "revision": 4,
-  "updated_at_utc": "2026-09-07T16:52:42Z",
+  "revision": 5,
+  "updated_at_utc": "2026-09-12T12:49:43.121Z",
   "authority_issue": 83,
   "state": "REPAIR",
   "product_implementation_held": true,
   "hold": {
     "authority": "owner",
     "reason": "owner_project_priority",
-    "since_utc": "2026-08-10T14:26:00Z",
+    "since_utc": "2026-09-12T12:49:43.121Z",
     "resume_condition": "Explicit owner resume instruction; preserve M33.1 and PR #79 as the technical stopping point. No automatic restart.",
-    "lifted_by_issue": 83,
     "disposition": "Owner renewed development hold on 2026-09-12: important ongoing project; planned to resume with no date set. Prior offline repair authorization is suspended. See the owner hold at the top of CURRENT.md."
   },
   "accepted_reset": {
