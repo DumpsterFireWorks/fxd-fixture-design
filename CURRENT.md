@@ -6,7 +6,7 @@ Chris explicitly paused development of this project to focus on ChatBack, ChatBa
 
 This is a development hold only. It does not authorize archiving, deletion, decommissioning, service shutdown, deployment or infrastructure changes. Preserve running services and existing use. 
 
-Machine-readable control records product_implementation_held=true; the retained REPAIR gate is the saved technical stopping point, not execution permission.
+Machine-readable control revision 5 records product_implementation_held=true; the retained REPAIR gate is the saved technical stopping point, not execution permission.
 
 Full owner decision: [portfolio priorities and shared-server boundary](https://github.com/DumpsterFireWorks/Repo-Index-on-GitHub/blob/main/OWNER_PROJECT_PRIORITIES_2026-09-12.md).
 
