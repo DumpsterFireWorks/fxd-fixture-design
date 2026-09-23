@@ -8,7 +8,7 @@ Owner direction on September 23, 2026 resumes bounded FXD development under the 
 
 The September 12 portfolio hold is lifted for this bounded offline gate. Product-runtime AI remains separately unauthorized.
 
-Authoritative machine state: [docs/CONTROL_STATE.json](docs/CONTROL_STATE.json), revision 6.
+Authoritative machine state: [docs/CONTROL_STATE.json](docs/CONTROL_STATE.json), revision 7.
 
 ## Why the direction changed
 
@@ -26,7 +26,7 @@ The previous execution sequence asked too much from Chris, generated determinist
 - **Issue:** #87
 - **Implementation PR:** #79 — existing draft, preserved
 - **Branch:** `agent/m33-1-native-product-reconstruction`
-- **Selected builder:** ChatGPT Codex Remote
+- **Selected builder:** Claude Code
 - **Work order:** [docs/FXD_RECOVERY_GATE_00.md](docs/FXD_RECOVERY_GATE_00.md)
 - **Product-runtime requests:** 0
 - **Development API requests:** 0
@@ -52,7 +52,9 @@ No live provider request, strategy compiler, weld-candidate UI, physical-validat
 
 FXD may use Codex or Claude Code as a subscription-backed implementation surface, but exactly one builder is selected per active gate.
 
-Current selected builder: **ChatGPT Codex Remote**.
+Current selected builder: **Claude Code**.
+
+Owner direction on September 23 selects Claude Code as the default FXD implementation builder. Codex remains an allowed fallback only when current GitHub authority explicitly selects it.
 
 Claude Code is ready through `CLAUDE.md` but must not modify PR #79 unless Review-Control explicitly changes the selected builder in current GitHub authority.
 
@@ -87,4 +89,4 @@ Only R0 is active.
 
 **CONTINUE**
 
-The selected builder reads Issue #87 and [the R0 work order](docs/FXD_RECOVERY_GATE_00.md), works only PR #79, uses offline/synthetic evidence, and stops `AWAITING_REVIEW`.
+Claude Code reads Issue #87, `CLAUDE.md`, and [the R0 work order](docs/FXD_RECOVERY_GATE_00.md), works only PR #79, uses subscription-backed development with zero product-runtime/API requests, and stops `AWAITING_REVIEW`.
