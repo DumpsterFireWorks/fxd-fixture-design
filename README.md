@@ -1,167 +1,91 @@
-# Owner development hold — 2026-09-12
+# FXD — Intelligent Industrial Fixture Design
 
-**ON HOLD — IMPORTANT ONGOING PROJECT — PLANNED TO RESUME — NO DATE SET.**
+FXD is practical AI-assisted industrial fixture-design software.
 
-Chris explicitly paused development of this project to focus on ChatBack, ChatBack-Model and Cynthia. This is the current owner instruction and overrides older instructions below to continue, repair, audit, merge, deploy or advance. Preserve the unfinished gate, branches, PRs, code and research. Resume only on explicit owner instruction; no automatic restart.
+## Product promise
 
-This is a development hold only. It does not authorize archiving, deletion, decommissioning, service shutdown, deployment or infrastructure changes. Preserve running services and existing use. 
+> **Import the assembly → set it down → confirm welds and genuinely unknown job requirements → FXD designs a practical fixture → inspect/edit → validate/export.**
 
-Machine-readable control records product_implementation_held=true; the retained REPAIR gate is the saved technical stopping point, not execution permission.
+FXD begins with weld fixtures for fabricated assemblies. It is not trying to replace general-purpose CAD.
 
-Full owner decision: [portfolio priorities and shared-server boundary](https://github.com/DumpsterFireWorks/Repo-Index-on-GitHub/blob/main/OWNER_PROJECT_PRIORITIES_2026-09-12.md).
+## Current state
 
----
+**FXD-R0 — OFFLINE RECOVERY BASELINE — Issue #87 / PR #79**
 
-## Preserved pre-hold project record
+Owner direction on September 23, 2026 resumed bounded offline development using the recovery direction in:
 
-The original record below retains progress, evidence and restart context. Its prior next-action/active-work wording is suspended by the owner hold above.
+- [Independent reassessment](docs/FXD_REASSESSMENT_2026-09-22.md)
+- [Decision 0002](docs/decisions/0002-fxd-recovery-reset.md)
+- [User workflow](docs/USER_WORKFLOW.md)
+- [Current architecture](docs/ARCHITECTURE_CURRENT.md)
+- [Recovery roadmap](docs/FXD_RECOVERY_ROADMAP.md)
 
-<!-- FXD-CONTROL-STATE: docs/CONTROL_STATE.json -->
-<!-- FXD-MILESTONE-STATE: docs/MILESTONE_STATE.json -->
-# FXD — Intelligent Fixture Design
+Current machine authority is [docs/CONTROL_STATE.json](docs/CONTROL_STATE.json).
 
-FXD is an AI-driven industrial fixture-design platform for manufacturing and fabrication.
+## Current work
 
-The first product focus is practical weld fixturing for sheet-metal, plate, tube, formed-part, and mixed fabricated assemblies. The intended outcome is not a contour-matched cradle or a geometrically valid demo. FXD must produce practical, editable fixture geometry that a qualified fixture engineer would actually build and use after review.
+PR #79 contains previously reviewed foundation repairs that must be preserved.
 
-## Product mission
+FXD-R0 does not add new fixture behavior. It:
+- synchronizes current main into PR #79;
+- repairs stale control-state validator/tests;
+- refreshes offline CI/OCP/persistence/cost evidence;
+- proves native Windows source + derived/review geometry are visibly rendered;
+- leaves PR #79 merge-ready after independent review.
 
-> Import or reconstruct the assembly, describe the manufacturing job, use AI to author the fixture strategy, compile that strategy into real OCP geometry, challenge it deterministically, and present the result for qualified engineering approval.
+Product-runtime requests authorized now: **0**.
 
-## Current status
+## Architecture
 
-**M33 is active. M33.1 / Issue #69 / draft PR #79 is REPAIR — OFFLINE ONLY.**
-
-The Issue #66 reset was accepted through PR #67; Issue #70 originally activated M33.1. Owner direction recorded in Issue #83 resumes only pass M33.1-R1 on the same branch/PR. [CONTROL_STATE](docs/CONTROL_STATE.json) revision 4 and [CURRENT](CURRENT.md) are current authority.
-
-Read the [full audit](docs/FXD_FULL_AUDIT_2026-09-07.md), [repair sequence](docs/FXD_REPAIR_PLAN_2026-09-07.md), and [first Codex work order](docs/CODEX_REPAIR_PASS_01.md). Existing STEP import, CAD engine, native workspace and fixture capabilities are retained. The first pass repairs legacy project migration, classification decisions lost at execution, and branch/acceptance integration. Later work is queued, not active.
-
-Normal implementation uses **ChatGPT Codex Remote under the user's ChatGPT agentic allowance**. The paid GitHub Codex dispatcher is retired. Development API requests and authorized live product requests for this pass are both zero. Profile E remains unspent and requires a separate explicit owner authorization. No product merge or M33.2 advancement is authorized by this offline pass.
-
-The previous Issue #57 / PR #54 path remains closed as superseded. It proved substantial OCP, VTK, geometry, validation, persistence, fixture-library, and export capability, but it did not prove FXD's product value: AI remained advisory while deterministic templates generated the fixture, and repeated human reviews rejected fixture practicality.
-
-The closed branch and evidence are preserved for selective salvage. They are not authorization to continue the old flow.
-
-The frozen pre-reset registry remains at [`docs/MILESTONE_STATE.json`](docs/MILESTONE_STATE.json) as byte-preserved historical evidence. It cannot select current work, override `docs/CONTROL_STATE.json`, or reopen closed work.
-
-## Accepted product architecture
+Target:
 
 ```text
-Product CAD + manufacturing intent + approved precedents
-                          ↓
-       native product reconstruction and evidence
-                          ↓
-        typed live-AI fixture strategy
-                          ↓
-      restricted deterministic command compiler
-                          ↓
-              real OCP fixture authoring
-                          ↓
-       deterministic engineering validation
-               ↓ pass              ↓ fail
-       human review/export    bounded AI repair
+assembly geometry
++ confirmed manufacturing intent
++ useful fixture precedents
+        ↓
+typed AI fixture strategy
+        ↓
+restricted deterministic compiler
+        ↓
+real OCP fixture geometry
+        ↓
+deterministic physical validation
+        ↓
+human practicality review
 ```
 
-AI reasons about fixture strategy. Deterministic systems own executable geometry, validation truth, and release blocking. Human engineering judgment owns practicality and production authority.
+AI owns strategy in AI Design mode. Deterministic systems own geometry and engineering truth. Human engineering judgment owns practical acceptance and production authority.
 
-See [`docs/AI_DRIVEN_SYNTHESIS_ARCHITECTURE.md`](docs/AI_DRIVEN_SYNTHESIS_ARCHITECTURE.md).
+## Recovery order
 
-## Core principles
+- R0 — clean baseline and preserved foundation
+- R1 — simple pose/job/weld intent
+- R2 — physical truth
+- R3 — AI strategy drives CAD + first meaningful bounded live strategy proof
+- R4 — one practical fixture + native finishing
 
-- Source product CAD remains immutable and traceable.
-- The engineering core remains CAD-neutral and vendor-independent.
-- Product meaning is reconstructed before designing around anonymous geometry.
-- Live AI Design produces the typed fixture strategy that actually drives authoring.
-- OCP and deterministic checks own geometry, locating, collision, access, units, persistence, and export truth.
-- AI failures cannot be hidden by a silent deterministic fallback.
-- Every feature is traceable to source evidence, AI/manual strategy, commands, parameters, precedents, repairs, and edits.
-- Fixture examples become structured product-feature-to-fixture-response precedents, not opaque STEP files alone.
-- Qualified human fixture-engineering approval remains mandatory.
-- The first proof is one representative fixture, not a universal platform demo.
+Only R0 is active.
 
-## Development model
+## Builders
 
-FXD uses a simple Review-Control/Codex loop:
+FXD can use ChatGPT Codex Remote or Claude Code as subscription-backed implementation surfaces, but exactly one is selected per active gate.
 
-> **Review-Control decides and reviews. GitHub remembers. ChatGPT Codex Remote implements one bounded gate. Pull requests hold the evidence.**
+Current selected builder: **ChatGPT Codex Remote**.
 
-The current legal action is bounded `CONTINUE` for M33.1-R1 only. Codex returns `AWAITING_REVIEW`; no live request, product PR merge or M33.2 advancement is authorized. Any future owner hold still stops implementation.
+See [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md).
 
-After explicit owner resume and synchronized control-state update, the normal loop is:
+## Health
 
-```text
-Review-Control -> CONTINUE
-ChatGPT Codex Remote -> AWAITING_REVIEW
-Review-Control -> CONTINUE | OWNER_DECISION | BLOCKED | COMPLETE
-```
-
-One repository. One active gate. One implementation PR. Codex does not choose scope, merge, advance, deploy, or approve its own work. Claude/Anthropic is not part of the standard implementation or audit path.
-
-The former autonomous GitHub Actions Foreman, historical registry selector, and paid GitHub Codex dispatcher are retired and fail closed. CI rejects active workflow routes that would reintroduce provider/Codex API development spending.
-
-Read [`docs/OPERATOR_PROTOCOL.md`](docs/OPERATOR_PROTOCOL.md) and [`AGENTS.md`](AGENTS.md) before working.
-
-## Read order
-
-1. `AGENTS.md`
-2. `docs/CONTROL_STATE.json`
-3. `CURRENT.md`
-4. active GitHub issue
-5. `docs/PRODUCT_DIRECTION.md`
-6. `docs/OPERATOR_PROTOCOL.md`
-7. `docs/ENGINEERING_CONSTITUTION.md`
-8. `docs/AI_DRIVEN_SYNTHESIS_ARCHITECTURE.md`
-9. `docs/ARCHITECTURE.md`
-10. `docs/MILESTONE_CONTRACT.md`
-11. active PR, exact head, review threads, and CI
-
-Historical milestone registries, roadmaps, binders, and handoffs remain evidence and context. They do not override current control state.
-
-## Active gate — M33.1 (offline repair)
-
-Issue #69 must eventually prove:
-
-1. a versioned, deterministic, source-SHA-bound native product/manufacturing reconstruction;
-2. visible uncertainty and focused blockers/questions instead of guessed manufacturing meaning;
-3. explicit `ai_design_live` and `deterministic_offline` modes;
-4. visible and persisted provider/model/request/provenance state;
-5. one intentional bounded OpenAI request when live mode is selected and separately authorized;
-6. missing configuration, timeout, provider failure, quarantine, cancellation, or malformed output produces **AI DESIGN — FAILED — NO FALLBACK USED**;
-7. offline operation never claims a live AI result;
-8. focused, full, pinned-OCP, native-UI, privacy, secret, and exactly-one-live-request evidence.
-
-M33.1 does not author the final AI-driven fixture. Strategy-to-OCP authoring belongs to M33.2. The current offline pass does not waive these acceptance requirements.
-
-## Full M33 proof
-
-The ordered milestone must eventually prove one representative fixture:
-
-1. trustworthy native product reconstruction;
-2. one intentional live OpenAI strategy request with visible provider/model provenance;
-3. typed supports, locators, clamps/reactions, base/construction, loading/unloading, and access intent;
-4. real OCP geometry authored from the AI strategy;
-5. deterministic validation;
-6. no more than one bounded AI repair cycle;
-7. persistence and coherent review/manufacturing outputs;
-8. qualified human judgment: **Would I actually build and use this?**
-
-A fixture that is merely geometrically valid fails.
-
-## Local workbench
-
-On Windows, `launch-fxd.bat` starts the current engineering workbench using the repository `.venv`. Dragging a `.step` or `.stp` file onto the launcher opens that file.
-
-The current launcher and application behavior predate the Issue #66 reset. Until M33.1 is accepted, do not assume normal launch proves that a live AI provider was configured or used. Provider provenance must become explicit in this gate.
-
-## Repository health
-
-Run:
+Repository health command:
 
 ```text
 bash scripts/ci.sh
 ```
 
-Passing checks prove only the behavior they actually exercise. Offline tests do not prove live-provider use, and software checks do not approve fixture practicality or production release.
+Current main is known to fail the stale control-state validator recorded in Issue #27. Repairing that mismatch is intentionally part of FXD-R0.
+
+Passing software checks does not prove fixture practicality.
 
 ## Rights
 
