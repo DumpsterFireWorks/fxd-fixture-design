@@ -1,79 +1,43 @@
-# FXD Development Orchestration Setup
+# FXD Development Orchestration
 
-## Status
+The autonomous Foreman and paid GitHub Codex dispatcher are retired.
 
-**The former autonomous “FXD Foreman” and paid GitHub Codex dispatcher are retired. FXD M33.1 is REPAIR — OFFLINE ONLY.**
+FXD uses:
 
-Do not run a workflow that selects a milestone, plans, implements, reviews, and publishes inside one agent context. Do not create a GitHub/API-backed Codex implementation route. Both conflict with the accepted Review-Control/ChatGPT Codex Remote separation and can create stale, duplicate, or paid work outside the owner-approved path.
+> **Review-Control → one selected subscription builder → AWAITING_REVIEW → exact-head Review-Control**
 
-## Accepted operating model
+## Current gate
 
-Read [`docs/OPERATOR_PROTOCOL.md`](OPERATOR_PROTOCOL.md).
+FXD-R0 / Issue #87 / PR #79 / offline only.
 
-- The **FXD Review-Control chat** reads GitHub truth, owns scope, writes durable decisions/findings, and independently reviews exact PR heads.
-- **ChatGPT Codex Remote** is the normal implementation/repair surface after a legal `CONTINUE`; it uses the user's ChatGPT agentic allowance and stops `AWAITING_REVIEW`.
-- GitHub holds the active issue, scope, branch, PR, findings, CI, and evidence.
-- GitHub Actions do not run paid Codex/provider development orchestration and do not receive repository OpenAI API credentials for implementation or repair.
-- Chris is escalated only for genuine product ambiguity, destructive/high-risk action, paid services, secrets, production authority, or qualified fixture judgment.
-- Claude/Anthropic is not a standard implementation, review, audit, or fallback route.
+Selected builder: **ChatGPT Codex Remote**.
 
-## Current control state
+Claude Code is an allowed future implementation surface only when current CONTROL_STATE and the active issue select it.
 
-Read repository-root `CURRENT.md` and `docs/CONTROL_STATE.json` before any action.
+## No paid development route
 
-The Issue #66 reset is accepted. Issue #70 activated M33.1; Issue #83 records the owner-authorized offline repair resumption:
+GitHub Actions must not:
+- invoke paid Codex/provider development orchestration;
+- receive provider API keys for implementation;
+- turn CONTINUE into API spending.
 
-- **M33.1 / Issue #69 — Native product reconstruction and explicit live-AI mode**
-- **State:** REPAIR — OFFLINE ONLY
-- **Implementation PR:** #79, draft and preserved
-- **Branch:** `agent/m33-1-native-product-reconstruction`
-- only M33.1-R1 in `docs/CODEX_REPAIR_PASS_01.md` is authorized;
-- no Profile E/product-runtime paid request is authorized in this pass;
-- PR #79 must not merge or advance to M33.2 in this pass;
-- superseded Issue #57 / PR #54 remains closed and may be used only as reviewed salvage evidence.
+FXD product-runtime API use is separately governed and currently unauthorized.
 
-Issue #83 records the current owner direction. Current-main revision 4, CURRENT.md and Issue #69 select the same bounded work order. Codex first performs the explicitly authorized current-main synchronization on PR #79, preserving cost controls.
+## Entry points
 
-## Codex entry point
+Codex reads:
+- `AGENTS.md`
+- `docs/CONTROL_STATE.json`
+- `CURRENT.md`
+- Issue #87
+- `docs/FXD_RECOVERY_GATE_00.md`
 
-The standing implementation prompt is:
+Claude Code reads the same plus `CLAUDE.md`, and may modify only when `selected_builder=claude_code`.
 
-```text
-.github/codex/prompts/run-milestone.md
-```
+## Current known failure
 
-Despite the historical filename, it defines the bounded `Continue FXD` contract. It does not authorize milestone selection, override a hold, or create a paid repository dispatcher. ChatGPT Codex Remote reads repository truth directly.
+Main's control validator still expects the old revision-4/unheld M33.1 state.
 
-## Repository preflight
+Issue #27 records the failure.
 
-Before any future `CONTINUE`, Review-Control must verify:
-
-- repository identity and current default-branch SHA;
-- `docs/CONTROL_STATE.json`, `CURRENT.md`, Issue #69, and PR #79 agree;
-- `product_implementation_held` is false after explicit owner resume;
-- the existing implementation PR/branch is the sole M33.1 implementation surface;
-- exact review findings and required CI are known;
-- no held, superseded, or future lane is being targeted;
-- no GitHub workflow has reintroduced a paid Codex/provider development route.
-
-Ambiguity blocks before model execution.
-
-## OpenAI product configuration
-
-The OpenAI API used by the **FXD product runtime** is separate from ChatGPT Codex Remote development orchestration.
-
-M33.1 eventually requires explicit process configuration for a separately authorized live acceptance:
-
-```text
-OPENAI_API_KEY
-FXD_OPENAI_MODEL
-FXD_AI_PROVIDER=openai
-```
-
-These values are product-runtime configuration only. They must not be forwarded into GitHub Actions or repository development automation. Do not commit keys. Use a dedicated OpenAI project with conservative limits and alerts.
-
-The model name is explicitly configured; FXD must not guess, auto-route, or silently switch it. Live AI Design must display provider/model/request provenance and fail closed when configuration or provider execution fails. Deterministic/offline mode remains separately selectable and labeled. Exactly-one-request live acceptance is opt-in, separate from ordinary CI, and unauthorized in the current offline pass.
-
-## Public repository warning
-
-Do not place customer CAD, employer files, real fixture libraries, proprietary rule packs, private corrections, patent-sensitive details, API keys, file paths, or vendor-restricted binaries in repository prompts, tests, screenshots, logs, or artifacts.
+FXD-R0 repairs that validator/tests without weakening cost or fail-closed controls.
