@@ -104,7 +104,7 @@ Public code may define interfaces, synthetic fixtures, generic rules, and legall
 
 ## 20. One active gate and one independent review path
 
-Development follows `docs/OPERATOR_PROTOCOL.md`: one active gate, one implementation PR, Review-Control as planning/review authority, Codex as bounded builder, and exact-head evidence. Claude/Anthropic is not a standard implementation, review, audit, or fallback route.
+Development follows `docs/OPERATOR_PROTOCOL.md`: one active gate, one implementation PR, Review-Control as planning/review authority, exactly one explicitly selected subscription-backed builder (ChatGPT Codex Remote or Claude Code), and exact-head evidence. The builder cannot independently approve its own work. Claude/Anthropic is not made an FXD product-runtime provider, independent review path, audit fallback, or tie-break route merely because Claude Code may be selected for implementation.
 
 ## 21. One health command
 
@@ -113,3 +113,11 @@ Development follows `docs/OPERATOR_PROTOCOL.md`: one active gate, one implementa
 ## 22. Prove the core product before expanding scope
 
 Before multiple fixture families, multi-station optimization, broad native CAD, SaaS, billing, learned universal rules, or model routing, FXD must pass one representative AI-driven fixture synthesis proof with live provenance, real authoring, deterministic validation, bounded repair, and qualified practicality acceptance.
+
+## 23. User questions are an engineering cost
+
+FXD should ask the operator only when missing information cannot be reliably inferred or proposed and materially changes fixture strategy or release evidence.
+
+Prefer deterministic inference, saved shop/job profiles, recommendations, and batch confirmation over serial questioning.
+
+Internal datum, constraint, normal, frame, and degree-of-freedom terminology may remain precise in the engine, but the normal UI should translate failures and decisions into practical shop language.
