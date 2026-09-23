@@ -71,7 +71,7 @@ Only R0 is active.
 
 FXD can use ChatGPT Codex Remote or Claude Code as subscription-backed implementation surfaces, but exactly one is selected per active gate.
 
-Current selected builder: **ChatGPT Codex Remote**.
+Current selected builder and owner default: **Claude Code on Claude Opus 5.5**. Codex remains an allowed fallback only when current GitHub authority explicitly selects it.
 
 See [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md).
 
