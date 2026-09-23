@@ -40,6 +40,7 @@ Historical M32/M33 milestone documents and superseded issues are evidence/salvag
 - Exactly one implementation builder per gate.
 - Allowed builder surfaces: ChatGPT Codex Remote or Claude Code.
 - Current selected builder is recorded in CONTROL_STATE and the active issue.
+- Owner default for FXD implementation is Claude Code unless a later explicit decision selects another allowed builder.
 - The unselected builder must not modify the active branch.
 - The builder stops `AWAITING_REVIEW`.
 - Review-Control checks the exact pushed head and decides merge/next action.
@@ -53,7 +54,7 @@ Claude Code implementation authority never makes Claude/Anthropic an FXD product
 - **Issue #87**
 - **PR #79**
 - **Branch:** `agent/m33-1-native-product-reconstruction`
-- **Selected builder:** ChatGPT Codex Remote
+- **Selected builder:** Claude Code
 - **Mode:** OFFLINE ONLY
 - **Work order:** `docs/FXD_RECOVERY_GATE_00.md`
 
