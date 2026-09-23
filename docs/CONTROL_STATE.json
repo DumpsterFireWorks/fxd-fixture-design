@@ -1,7 +1,7 @@
 {
   "schema_version": "fxd-control-state-v1",
-  "revision": 7,
-  "updated_at_utc": "2026-09-23T14:56:00Z",
+  "revision": 8,
+  "updated_at_utc": "2026-09-23T15:00:00Z",
   "authority_issue": 87,
   "state": "REPAIR",
   "product_implementation_held": false,
@@ -49,7 +49,9 @@
     "product_runtime_api_requires_explicit_review_control_authorization": true,
     "builder_cannot_independently_approve_own_work": true,
     "default_builder": "claude_code",
-    "owner_builder_preference": "Use Claude Code for FXD implementation by default unless a later explicit owner/Review-Control decision selects another allowed builder."
+    "owner_builder_preference": "Use Claude Code for FXD implementation by default unless a later explicit owner/Review-Control decision selects another allowed builder.",
+    "selected_development_model_label": "Claude Opus 5.5",
+    "selected_development_model_note": "Owner-selected Claude Code development model label only; no Anthropic API model identifier is assumed and no API route is authorized."
   },
   "preserved_foundation": {
     "pull_request": 79,
@@ -115,12 +117,13 @@
     "stop_state": "AWAITING_REVIEW",
     "synchronize_current_main": true,
     "product_merge_authorized_after_independent_acceptance": true,
-    "next_gate_authorized": false
+    "next_gate_authorized": false,
+    "selected_development_model_label": "Claude Opus 5.5"
   },
   "product_runtime_authorization": {
     "authorized": false,
     "live_requests": 0,
     "reason": "FXD-R0 is offline only. First meaningful live strategy proof is deferred to FXD-R3 and requires separate owner/Review-Control authorization."
   },
-  "next_valid_action": "CONTINUE FXD-R0 / Issue #87 on PR #79 using Claude Code as the selected subscription builder. Synchronize current main, preserve F05/F06/F11, repair control validator/tests, run full offline evidence and native Windows visible-scene proof, then stop AWAITING_REVIEW. Product-runtime requests remain 0."
+  "next_valid_action": "CONTINUE FXD-R0 / Issue #87 on PR #79 using Claude Code with the owner-selected Claude Opus 5.5 development model. Synchronize current main, preserve F05/F06/F11, repair control validator/tests, run full offline evidence and native Windows visible-scene proof, then stop AWAITING_REVIEW. Development API requests and product-runtime requests remain 0."
 }
