@@ -10,9 +10,9 @@ FXD uses:
 
 FXD-R0 / Issue #87 / PR #79 / offline only.
 
-Selected builder: **ChatGPT Codex Remote**.
+Selected builder: **Claude Code on Claude Opus 5.5**.
 
-Claude Code is an allowed future implementation surface only when current CONTROL_STATE and the active issue select it.
+Claude Code is the current selected implementation surface. Use the user's subscription-backed Claude Code route on Claude Opus 5.5. Codex is inactive for this gate unless current authority is explicitly changed.
 
 ## No paid development route
 
