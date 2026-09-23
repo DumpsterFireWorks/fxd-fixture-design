@@ -4,12 +4,13 @@ Active issue: #87
 Implementation PR: #79  
 Branch: `agent/m33-1-native-product-reconstruction`  
 Selected builder: Claude Code  
+Development model: Claude Opus 5.5  
 Mode: OFFLINE ONLY  
 Product-runtime requests authorized: 0
 
 ## Builder/auth boundary
 
-Use Claude Code through the user's Claude subscription. Do not intentionally route FXD development through an Anthropic API key or any paid API development dispatcher. Product-runtime provider requests remain zero. If the available Claude session cannot be verified as the selected subscription-backed implementation surface, stop `BLOCKED` rather than silently switching routes.
+Use Claude Code through the user's Claude subscription, with the owner-selected **Claude Opus 5.5** development model. Do not intentionally route FXD development through an Anthropic API key or any paid API development dispatcher. The model label is development configuration only; do not invent or require an Anthropic API model ID. Product-runtime provider requests remain zero. If the available Claude session cannot be verified as the selected subscription-backed implementation surface, stop `BLOCKED` rather than silently switching routes.
 
 Codex is not the active implementation builder for this gate and must not modify PR #79 while `selected_builder=claude_code`.
 
@@ -56,7 +57,7 @@ Do not force-push reviewed history away.
 The known failure is Issue #27: `scripts/validate_control_state.py` still hard-codes revision-4/unheld/M33.1-R1 assumptions.
 
 Update the validator and governance tests to validate the **meaning** of current recovery authority:
-- revision 7/current schema;
+- revision 8/current schema;
 - `product_implementation_held=false`;
 - active issue #87 / gate FXD-R0 / PR #79;
 - selected builder matches current control;
