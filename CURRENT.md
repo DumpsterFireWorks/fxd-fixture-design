@@ -1,74 +1,90 @@
-# Owner development hold — 2026-09-12
-
-**ON HOLD — IMPORTANT ONGOING PROJECT — PLANNED TO RESUME — NO DATE SET.**
-
-Chris explicitly paused development of this project to focus on ChatBack, ChatBack-Model and Cynthia. This is the current owner instruction and overrides older instructions below to continue, repair, audit, merge, deploy or advance. Preserve the unfinished gate, branches, PRs, code and research. Resume only on explicit owner instruction; no automatic restart.
-
-This is a development hold only. It does not authorize archiving, deletion, decommissioning, service shutdown, deployment or infrastructure changes. Preserve running services and existing use. 
-
-Machine-readable control revision 5 records product_implementation_held=true; the retained REPAIR gate is the saved technical stopping point, not execution permission.
-
-Full owner decision: [portfolio priorities and shared-server boundary](https://github.com/DumpsterFireWorks/Repo-Index-on-GitHub/blob/main/OWNER_PROJECT_PRIORITIES_2026-09-12.md).
-
----
-
-## Preserved pre-hold project record
-
-The original record below retains progress, evidence and restart context. Its prior next-action/active-work wording is suspended by the owner hold above.
-
 # FXD Current Control State
 
 ## State
 
-**REPAIR — OFFLINE ONLY — M33.1 / ISSUE #69 / PR #79**
+**FXD-R0 — RECOVERY BASELINE — OFFLINE ONLY — ISSUE #87 / PR #79**
 
-Projection of [`docs/CONTROL_STATE.json`](docs/CONTROL_STATE.json), revision 4. Owner direction of September 7 is recorded in Issue #83. The Issue #66 reset remains accepted through PR #67; Issue #70 originally activated M33.1. Only the bounded offline repair pass is resumed.
+Owner direction on September 23, 2026 resumes bounded FXD development under the practical-recovery reset.
+
+The September 12 portfolio hold is lifted for this bounded offline gate. Product-runtime AI remains separately unauthorized.
+
+Authoritative machine state: [docs/CONTROL_STATE.json](docs/CONTROL_STATE.json), revision 6.
+
+## Why the direction changed
+
+Read [the independent reassessment](docs/FXD_REASSESSMENT_2026-09-22.md) and [Decision 0002](docs/decisions/0002-fxd-recovery-reset.md).
+
+FXD keeps the existing OCP/STEP/VTK/persistence foundation, but recovery is now organized around the actual product:
+
+> **Import → set it down → confirm welds/job → get a practical fixture → inspect/edit → validate/export.**
+
+The previous execution sequence asked too much from Chris, generated deterministic fixture concepts before AI, failed to pass enough useful reconstruction/precedent substance to the model, and lacked enough physical validation to prove practicality.
 
 ## Active assignment
 
-- **Milestone:** M33 — AI-Driven Fixture Synthesis Proof
-- **Gate:** M33.1 — Native product reconstruction and explicit live-AI mode
-- **Issue:** #69
-- **Implementation PR:** #79 — draft, repair required, not accepted
+- **Gate:** FXD-R0 — Recovery baseline and preserved R1 integration
+- **Issue:** #87
+- **Implementation PR:** #79 — existing draft, preserved
 - **Branch:** `agent/m33-1-native-product-reconstruction`
-- **Audited starting head:** `686486b0cfd6e1f062a3074b8d1319a0e84549b4`
-- **Pass:** M33.1-R1 — F05, F06, F11 only
-- **Work order:** [CODEX_REPAIR_PASS_01.md](docs/CODEX_REPAIR_PASS_01.md)
-- **Audit:** [FXD_FULL_AUDIT_2026-09-07.md](docs/FXD_FULL_AUDIT_2026-09-07.md)
-- **Queued repairs:** [FXD_REPAIR_PLAN_2026-09-07.md](docs/FXD_REPAIR_PLAN_2026-09-07.md)
+- **Selected builder:** ChatGPT Codex Remote
+- **Work order:** [docs/FXD_RECOVERY_GATE_00.md](docs/FXD_RECOVERY_GATE_00.md)
+- **Product-runtime requests:** 0
+- **Development API requests:** 0
 
-Keep the existing CAD engine, STEP import, native workspace and engineering modules. Repair legacy proposal-bearing project migration and the classification answer/execution flow. First synchronize current main into the same PR branch as explicitly allowed by the work order. Codex may copy current governance from main but cannot change its policy or budgets.
+PR #79's previously reviewed R1 work at `de26501958045b5f1dd80eb40ce8f8f1f8d9cf5f` must be preserved:
+- F05 classification decisions;
+- F06 legacy proposal-bearing migration/history;
+- F11 repository/cost preflight integration.
 
-## Development and API boundary
+## FXD-R0 task
 
-- **Implementation surface:** ChatGPT Codex Remote under the user's ChatGPT agentic allowance.
-- **Development API requests:** 0.
-- **Paid GitHub Codex dispatchers:** forbidden.
-- **Authorized product-runtime requests for this pass:** 0.
-- **Profile E request remains unspent** and unauthorized.
-- **`CONTINUE`, `test FXD`, `run the tests`, and `finish M33.1` do not authorize product-runtime API spending.**
-- No provider credentials, live opt-ins, live acceptance harness execution or real-provider calls. Use offline/synthetic-provider evidence.
-- Product-runtime API use requires a separate explicit owner instruction to run the live test and an exact-head bounded Review-Control authorization.
-- The retired paid dispatcher stays inert; current-main workflow and API-spend firewall checks must remain intact.
+The builder must:
 
-## Product-runtime ceilings, not authorization
+1. synchronize current main into PR #79 without losing reviewed R1 behavior;
+2. repair the stale control validator/governance tests that still hard-code revision-4 history;
+3. run focused and full offline CI, cost/firewall, OCP, persistence, and static evidence;
+4. obtain native Windows visible-scene proof showing source and review/derived geometry;
+5. stop `AWAITING_REVIEW`.
 
-- **Live requests per acceptance run:** 1
-- **Automatic provider retries:** 0
-- **Repair requests in M33.1:** 0
-- **Maximum request timeout:** 60 seconds
-- **Model policy:** explicitly configured high-capability OpenAI model; no default guess
+No live provider request, strategy compiler, weld-candidate UI, physical-validation repair, precedent migration, new dependency, or new product scope belongs in FXD-R0.
 
-The current pass authorizes zero of those requests. No runtime model is selected by this setup.
+## Builder policy
 
-## Acceptance and exclusions
+FXD may use Codex or Claude Code as a subscription-backed implementation surface, but exactly one builder is selected per active gate.
 
-Offline R1 completion returns AWAITING_REVIEW; it does not complete M33.1. Current-head Windows interaction and Profile E remain outstanding until actually evidenced. No product PR merge, M33.2 advancement, later queued repairs, final strategy authoring, wholesale rewrite, production release, SaaS or billing is authorized in this pass.
+Current selected builder: **ChatGPT Codex Remote**.
 
-M32 / Issue #57 remains SUPERSEDED. PR #54 — closed unmerged, selective salvage only. Issues #59/#63 stay superseded. `docs/MILESTONE_STATE.json` remains frozen historical evidence.
+Claude Code is ready through `CLAUDE.md` but must not modify PR #79 unless Review-Control explicitly changes the selected builder in current GitHub authority.
+
+The builder never independently approves its own work.
+
+## Live-model sequencing
+
+The explicit live/offline modes and fail-closed provider boundary remain protected.
+
+The old requirement to spend Profile E before strategy could drive geometry is superseded.
+
+The first meaningful live strategy proof is planned for **FXD-R3**, after:
+- the simplified intent workflow exists;
+- the physical judge can reject bad fixtures;
+- manual and synthetic strategies demonstrably drive OCP geometry.
+
+That later live request still requires separate authorization.
+
+## Recovery roadmap
+
+See [docs/FXD_RECOVERY_ROADMAP.md](docs/FXD_RECOVERY_ROADMAP.md):
+
+- **R0:** clean recovery baseline and merge preserved foundation
+- **R1:** simple pose/job/weld intent
+- **R2:** physical truth
+- **R3:** AI strategy actually drives CAD + first meaningful live proof
+- **R4:** one practical fixture and native finishing
+
+Only R0 is active.
 
 ## Next valid action
 
 **CONTINUE**
 
-ChatGPT Codex Remote reads the first work order, reconciles current main into PR #79, repairs F05/F06/F11 with offline evidence and stops AWAITING_REVIEW. The setup itself does not launch a Codex session or a paid workflow.
+The selected builder reads Issue #87 and [the R0 work order](docs/FXD_RECOVERY_GATE_00.md), works only PR #79, uses offline/synthetic evidence, and stops `AWAITING_REVIEW`.
