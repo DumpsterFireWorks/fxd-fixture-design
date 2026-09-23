@@ -22,15 +22,19 @@ from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QCheckBox, QComboBox, QPushButton, QWidget
 
 from fxd_geometry import (
+    AnnotationRole,
     EngineeringAnnotations,
     ExportError,
+    GeometryReference,
     KernelOperationError,
     InteractiveWorkflow,
     OcpKernel,
     ProcessSetup,
     RenderDiagnostics,
     Vec3,
+    ai_response_from_proposal,
     generate_fixture_proposal,
+    face_annotation,
     import_step,
     load_step_for_workbench,
     minimal_intent_questions,
@@ -155,7 +159,55 @@ class _OpenAiSchemaFailureProvider:
         raise RuntimeError("OpenAI structured-output request was rejected")
 
 
+class _OpenAiSuccessProvider:
+    identity = "openai"
+    engine_identifier = "explicit-ui-test-model"
+    available = True
+
+    def __init__(self, response):
+        self.response = response
+        self.request_count = 0
+        self.last_usage = None
+
+    def generate(self, request, *, timeout_seconds, cancellation):
+        cancellation.raise_if_cancelled()
+        self.request_count += 1
+        return self.response
+
+
 class QtWorkbenchTests(unittest.TestCase):
+    def test_classification_question_answer_execute_save_reopen(self):
+        from tests.test_m33_repair_r1 import classified_case
+        from tests.test_m33_ai_execution import _LiveProvider
+        from fxd_geometry import ExecutionMode, ManufacturingClassification
+        document, workflow = classified_case()
+        window = self.window
+        window.document, window.workflow = document, workflow
+        window._set_process_setup(workflow.setup)
+        window.viewport.load_document(document)
+        window._refresh_all()
+        window.reconstruction_inspect.click()
+        self.assertTrue(window.project.product_reconstruction.blocked)
+        self.assertIn("Confirm the manufacturing role", window.classification_question.text())
+        window.classification_answer.setCurrentIndex(window.classification_answer.findData("plate_sheet"))
+        window.classification_apply.click()
+        self.assertFalse(window.project.product_reconstruction.blocked)
+        baseline = window.generate_fixture_proposal_now()
+        provider = _LiveProvider(ai_response_from_proposal(baseline.proposal))
+        window.proposal_execution_mode.setCurrentIndex(window.proposal_execution_mode.findData(ExecutionMode.AI_DESIGN_LIVE.value))
+        outcome = window.generate_fixture_proposal_now(provider=provider)
+        self.assertEqual(outcome.provider_state.value, "ai_proposal_generated")
+        self.assertEqual(provider.request_count, 1)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "answered.fxd.json"
+            window.save_project_path(path)
+            window.load_project_path(path)
+        self.assertEqual(window.project.classification_decisions[0].classification, ManufacturingClassification.PLATE_SHEET)
+        self.assertEqual(window.project.ai_execution.request_count, 1)
+        self.assertFalse(window.project.product_reconstruction.blocked)
+        self.assertEqual(window.classification_answer.currentData(), "plate_sheet")
+        self.assertEqual(window.document.source_bytes, document.source_bytes)
+
     @classmethod
     def setUpClass(cls):
         cls.application = create_application([])
@@ -168,8 +220,9 @@ class QtWorkbenchTests(unittest.TestCase):
         self.window.close()
         self.application.processEvents()
 
-    def _real_step(self, directory: str, *, compound: bool = False) -> Path:
-        first = self.kernel.make_box((0, 0, 0), (20, 15, 10))
+    def _real_step(self, directory: str, *, compound: bool = False,
+                   dimensions=(20, 15, 10)) -> Path:
+        first = self.kernel.make_box((0, 0, 0), dimensions)
         shape = first
         if compound:
             second = self.kernel.make_box((30, 0, 0), (40, 12, 8))
@@ -529,7 +582,11 @@ class QtWorkbenchTests(unittest.TestCase):
             outcome = self.window.generate_fixture_proposal_now()
         self.assertIsNotNone(self.window.project.fixture_proposal)
         self.assertEqual(outcome.provider_state.value, "ai_unavailable")
-        self.assertIn("Deterministic baseline proposal", self.window.proposal_status.text())
+        self.assertIn("Deterministic/offline proposal", self.window.proposal_status.text())
+        self.assertEqual(
+            self.window.ai_mode_banner.text(),
+            "DETERMINISTIC / OFFLINE — NO LIVE AI REQUEST",
+        )
         self.assertGreater(self.window.proposal_recommendations.count(), 0)
         normal_text = "\n".join(
             self.window.proposal_recommendations.item(index).text()
@@ -538,13 +595,13 @@ class QtWorkbenchTests(unittest.TestCase):
         self.assertNotIn("face:", normal_text)
         self.assertNotIn("proposal-", normal_text)
         self.assertIn("Proposal identity:", self.window.proposal_technical_details.text())
-        self.assertIn("Mode: Deterministic baseline", self.window.proposal_technical_details.text())
-        self.assertIn("Fallback used: Yes", self.window.proposal_technical_details.text())
+        self.assertIn("Mode: deterministic_offline", self.window.proposal_technical_details.text())
+        self.assertIn("Fallback used: No", self.window.proposal_technical_details.text())
         self.assertEqual(self.window.document.source_bytes, original)
 
     def test_failed_openai_reason_is_visible_only_in_technical_proposal_details(self):
         with tempfile.TemporaryDirectory() as directory:
-            source = self._real_step(directory)
+            source = self._real_step(directory, dimensions=(20, 15, 3))
             original = source.read_bytes()
             self.window.load_step_path(source)
             component = self.window.document.assembly.components[0]
@@ -558,16 +615,81 @@ class QtWorkbenchTests(unittest.TestCase):
             self.window.preview_guided_orientation()
             self.window.accept_guided_orientation()
             self.window.apply_proposal_recommended_intent()
+            product = product_from_workbench_document(self.window.document)
+            component = product.components[0]
+            weld_face = self.window.document.assembly.components[0].faces[0]
+            weld_reference = GeometryReference(
+                component.identity, component.bodies[0].identity, weld_face.reference,
+            )
+            weld = face_annotation(
+                self.window.document, weld_reference, AnnotationRole.WELD_JOINT,
+                notes="Synthetic confirmed weld intent.",
+            )
+            self.window.workflow = replace(
+                self.window.workflow,
+                geometry_annotations=self.window.workflow.geometry_annotations + (weld,),
+            )
+            self.window.proposal_execution_mode.setCurrentIndex(1)
             outcome = self.window.generate_fixture_proposal_now(_OpenAiSchemaFailureProvider())
         self.assertEqual(outcome.provider_state.value, "proposal_generation_failed")
-        self.assertIn("Deterministic baseline proposal", self.window.proposal_status.text())
+        self.assertEqual(
+            self.window.ai_mode_banner.text(),
+            "AI DESIGN — FAILED — NO FALLBACK USED",
+        )
+        self.assertIn("no deterministic substitute", self.window.proposal_status.text())
         self.assertIn(
-            "Provider failure: AI proposal failed or was quarantined: "
-            "OpenAI structured-output request was rejected.",
+            "Failure category: provider_failure",
             self.window.proposal_technical_details.text(),
         )
         self.assertNotIn("OpenAI structured-output", self.window.proposal_status.text())
         self.assertEqual(self.window.document.source_bytes, original)
+
+    def test_successful_live_mode_is_unmistakable_and_persisted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = self._real_step(directory, dimensions=(20, 15, 3))
+            self.window.load_step_path(source)
+            kernel_component = self.window.document.assembly.components[0]
+            bottom = kernel_component.faces[0]
+            front = next(face for face in kernel_component.faces if abs(sum(
+                left * right for left, right in zip(bottom.normal, face.normal)
+            )) < 0.1)
+            self.window.viewport.face_picked.emit(bottom.reference)
+            self.window.accept_guided_bottom_face()
+            self.window.viewport.face_picked.emit(front.reference)
+            self.window.preview_guided_orientation()
+            self.window.accept_guided_orientation()
+            self.window.apply_proposal_recommended_intent()
+            product = product_from_workbench_document(self.window.document)
+            component = product.components[0]
+            weld_ref = GeometryReference(
+                component.identity, component.bodies[0].identity, front.reference,
+            )
+            weld = face_annotation(
+                self.window.document, weld_ref, AnnotationRole.WELD_JOINT,
+                notes="Synthetic confirmed weld intent.",
+            )
+            self.window.workflow = replace(
+                self.window.workflow,
+                geometry_annotations=self.window.workflow.geometry_annotations + (weld,),
+            )
+            offline = self.window.generate_fixture_proposal_now()
+            provider = _OpenAiSuccessProvider(
+                ai_response_from_proposal(offline.proposal)
+            )
+            self.window.proposal_execution_mode.setCurrentIndex(1)
+            live = self.window.generate_fixture_proposal_now(provider)
+            path = live.project.save(Path(directory) / "live-ui.fxd.json")
+            restored = FxdProject.load(path)
+
+        self.assertEqual(provider.request_count, 1)
+        self.assertEqual(
+            self.window.ai_mode_banner.text(),
+            "AI DESIGN — LIVE — openai / explicit-ui-test-model",
+        )
+        self.assertIn("Live AI Design proposal", self.window.proposal_status.text())
+        self.assertEqual(restored.ai_execution.mode.value, "ai_design_live")
+        self.assertEqual(restored.ai_execution.request_count, 1)
+        self.assertFalse(restored.ai_execution.fallback_used)
 
     def test_stale_background_proposal_completion_is_discarded_after_source_replacement(self):
         with tempfile.TemporaryDirectory() as directory:

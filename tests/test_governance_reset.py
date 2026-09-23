@@ -7,10 +7,24 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.validate_control_state import CURRENT_DOCS, _validate_workflow_cost_boundary, validate
+from scripts.validate_control_state import (
+    CURRENT_DOCS, REQUIRED_AUTHORITY_FILES, _validate_workflow_cost_boundary, validate,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _copy_governed_tree(root: Path) -> None:
+    """Copy every file the control-state validator reads into an isolated tree."""
+    paths = set(CURRENT_DOCS) | set(REQUIRED_AUTHORITY_FILES) | {
+        "docs/CONTROL_STATE.json", "docs/MILESTONE_STATE.json", "scripts/fxd-backlog.mjs",
+    }
+    paths.update(str(path.relative_to(ROOT)) for path in (ROOT / ".github/workflows").glob("*"))
+    for relative in paths:
+        destination = root / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / relative, destination)
 
 
 def _write_retired_dispatcher(workflows: Path) -> None:
@@ -22,143 +36,171 @@ on:\n  workflow_dispatch:\njobs:\n  retired:\n    permissions:\n      contents: 
 
 
 class GovernanceResetTests(unittest.TestCase):
-    def test_offline_resume_rejects_unauthorized_scope_spend_and_state_drift(self) -> None:
+    def test_recovery_authority_rejects_scope_spend_builder_and_state_drift(self) -> None:
+        """Every unsafe or conflicting control-state edit must fail closed."""
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            paths = set(CURRENT_DOCS) | {
-                "docs/CONTROL_STATE.json", "docs/MILESTONE_STATE.json",
-                "docs/CODEX_REPAIR_PASS_01.md", "docs/FXD_FULL_AUDIT_2026-09-07.md",
-                "docs/FXD_REPAIR_PLAN_2026-09-07.md", "scripts/fxd-backlog.mjs",
-            }
-            paths.update(str(path.relative_to(ROOT)) for path in (ROOT / ".github/workflows").glob("*"))
-            for relative in paths:
-                destination = root / relative
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(ROOT / relative, destination)
+            _copy_governed_tree(root)
             self.assertEqual([], validate(root))
             state_path = root / "docs/CONTROL_STATE.json"
             original = state_path.read_text(encoding="utf-8")
             mutations = (
+                # product-runtime / development spend
                 ("product_runtime_authorization", "authorized", True),
                 ("product_runtime_authorization", "live_requests", 1),
+                ("budgets", "development_api_requests", 1),
+                ("budgets", "repository_paid_development_dispatchers", 1),
+                ("budgets", "product_runtime_live_requests", 1),
+                ("budgets", "automatic_provider_retries", 1),
+                ("development_execution", "repository_api_key_for_development", True),
+                ("development_execution", "github_paid_codex_dispatchers_allowed", True),
+                ("development_execution", "product_runtime_api_requires_explicit_review_control_authorization", False),
+                # builder selection
+                ("development_execution", "selected_builder", "anthropic_api"),
+                ("development_execution", "allowed_subscription_builders",
+                 ["chatgpt_codex_remote", "claude_code", "openai_api"]),
+                ("development_execution", "one_builder_per_gate", False),
+                ("development_execution", "builder_cannot_independently_approve_own_work", False),
+                ("implementation_authorization", "selected_builder", "chatgpt_codex_remote"),
+                # scope / advancement
                 ("implementation_authorization", "mode", "live"),
-                ("implementation_authorization", "issue", 70),
-                ("implementation_authorization", "findings", ["F05", "F06", "F11", "F07"]),
-                ("implementation_authorization", "product_merge_authorized", True),
+                ("implementation_authorization", "issue", 69),
+                ("implementation_authorization", "pass_id", "FXD-R1"),
                 ("implementation_authorization", "next_gate_authorized", True),
                 ("implementation_authorization", "stop_state", "COMPLETE"),
-                ("budgets", "development_api_requests", 1),
+                ("active_gate", "id", "FXD-R9"),
+                ("active_gate", "issue", 69),
                 ("active_gate", "pull_request", 54),
+                ("active_gate", "branch", "main"),
+                # held / stale state
                 (None, "product_implementation_held", True),
                 (None, "state", "ACTIVE"),
+                (None, "revision", 4),
+                (None, "authority_issue", 83),
+                ("preserved_foundation", "reviewed_head", "0" * 40),
+                ("preserved_foundation", "accepted_bounded_findings", ["F05", "F06"]),
+                ("accepted_reset", "merge_commit", "0" * 40),
             )
             for section, key, value in mutations:
-                with self.subTest(section=section, key=key):
+                with self.subTest(section=section, key=key, value=value):
                     state = json.loads(original)
                     target = state[section] if section else state
                     target[key] = value
                     state_path.write_text(json.dumps(state), encoding="utf-8")
                     self.assertTrue(validate(root))
             state_path.write_text(original, encoding="utf-8")
+            self.assertEqual([], validate(root))
+
+            # A re-held or pre-recovery CURRENT.md projection also fails closed.
             current_path = root / "CURRENT.md"
-            current_path.write_text(current_path.read_text(encoding="utf-8").replace(
-                "REPAIR — OFFLINE ONLY — M33.1 / ISSUE #69 / PR #79",
-                "HELD — COST CONTROL — M33.1 / ISSUE #69 / PR #79",
-            ), encoding="utf-8")
+            current_text = current_path.read_text(encoding="utf-8")
+            current_path.write_text(
+                current_text.replace("OFFLINE ONLY", "HELD — COST CONTROL", 1), encoding="utf-8",
+            )
             self.assertTrue(validate(root))
+            current_path.write_text(current_text, encoding="utf-8")
+            self.assertEqual([], validate(root))
+
+    def test_projection_naming_the_unselected_builder_fails_closed(self) -> None:
+        """Regression: main projected 'Selected builder: ChatGPT Codex Remote' after revision 8."""
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            _copy_governed_tree(root)
+            contract = root / "docs/MILESTONE_CONTRACT.md"
+            contract.write_text(
+                contract.read_text(encoding="utf-8").replace(
+                    "- Selected builder: Claude Code", "- Selected builder: ChatGPT Codex Remote",
+                ),
+                encoding="utf-8",
+            )
+            errors = validate(root)
+        self.assertTrue(any("conflicts with control state" in error for error in errors), errors)
+
+    def test_missing_recovery_authority_document_fails_closed(self) -> None:
+        for relative in REQUIRED_AUTHORITY_FILES:
+            with self.subTest(relative=relative), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                _copy_governed_tree(root)
+                (root / relative).unlink()
+                self.assertTrue(validate(root))
 
     def test_authoritative_control_state_validates(self) -> None:
         self.assertEqual([], validate(ROOT))
 
-    def test_m33_1_resumes_only_offline_repairs_on_existing_pr(self) -> None:
+    def test_fxd_r0_is_the_active_offline_recovery_gate_on_existing_pr(self) -> None:
         state = json.loads((ROOT / "docs" / "CONTROL_STATE.json").read_text(encoding="utf-8"))
-        self.assertEqual(4, state["revision"])
-        self.assertEqual(83, state["authority_issue"])
+        self.assertGreaterEqual(state["revision"], 8)
+        self.assertEqual(87, state["authority_issue"])
         self.assertEqual("REPAIR", state["state"])
         self.assertFalse(state["product_implementation_held"])
-        self.assertEqual("owner", state["hold"]["authority"])
-        self.assertEqual("cost_control", state["hold"]["reason"])
+        self.assertEqual(87, state["hold"]["lifted_by_issue"])
+        gate = state["active_gate"]
         self.assertEqual(
-            {
-                "lane": "product",
-                "milestone": 33,
-                "id": "M33.1",
-                "issue": 69,
-                "pull_request": 79,
-                "branch": "agent/m33-1-native-product-reconstruction",
-                "expected_pr_state": "open_draft_repair_offline_only",
-                "objective": state["active_gate"]["objective"],
-            },
-            state["active_gate"],
+            ("product", "FXD-R0", 87, 79, "agent/m33-1-native-product-reconstruction",
+             "open_draft_recovery_offline_only"),
+            (gate["lane"], gate["id"], gate["issue"], gate["pull_request"], gate["branch"],
+             gate["expected_pr_state"]),
         )
-        self.assertEqual("ACTIVE", state["product_milestone"]["status"])
-        self.assertEqual("REPAIR", state["product_milestone"]["active_gate"]["status"])
-        self.assertTrue(state["next_valid_action"].startswith("CONTINUE."))
-        self.assertIn("Profile E unauthorized", state["next_valid_action"])
+        authorization = state["implementation_authorization"]
+        self.assertEqual("offline_only", authorization["mode"])
+        self.assertEqual("FXD-R0", authorization["pass_id"])
+        self.assertEqual("AWAITING_REVIEW", authorization["stop_state"])
+        self.assertFalse(authorization["next_gate_authorized"])
+        self.assertTrue(state["next_valid_action"].startswith("CONTINUE"))
 
-    def test_development_route_is_chatgpt_codex_remote_with_zero_api_budget(self) -> None:
+    def test_exactly_one_bounded_subscription_builder_is_selected(self) -> None:
         state = json.loads((ROOT / "docs" / "CONTROL_STATE.json").read_text(encoding="utf-8"))
+        execution = state["development_execution"]
         self.assertEqual(
-            {
-                "implementation_surface": "chatgpt_codex_remote",
-                "repository_api_key_for_development": False,
-                "github_paid_codex_dispatchers_allowed": False,
-                "product_runtime_api_requires_explicit_review_control_authorization": True,
-            },
-            state["development_execution"],
+            ["chatgpt_codex_remote", "claude_code"], sorted(execution["allowed_subscription_builders"]),
         )
-        self.assertEqual(0, state["budgets"]["development_api_requests"])
-        self.assertEqual(0, state["budgets"]["repository_paid_codex_dispatchers"])
+        self.assertIn(execution["selected_builder"], execution["allowed_subscription_builders"])
+        self.assertEqual(execution["selected_builder"], state["implementation_authorization"]["selected_builder"])
+        self.assertTrue(execution["one_builder_per_gate"])
+        self.assertFalse(execution["repository_api_key_for_development"])
+        self.assertFalse(execution["github_paid_codex_dispatchers_allowed"])
+        self.assertTrue(execution["builder_cannot_independently_approve_own_work"])
 
-    def test_m33_1_product_runtime_budgets_remain_hard_ceiling(self) -> None:
+    def test_every_request_budget_is_zero_and_runtime_is_unauthorized(self) -> None:
         state = json.loads((ROOT / "docs" / "CONTROL_STATE.json").read_text(encoding="utf-8"))
         budgets = state["budgets"]
-        self.assertEqual(1, budgets["live_requests_per_acceptance_run"])
-        self.assertEqual(0, budgets["automatic_provider_retries"])
-        self.assertEqual(0, budgets["repair_requests"])
-        self.assertEqual(60, budgets["request_timeout_seconds_max"])
-        self.assertEqual(
-            "explicitly configured high-capability OpenAI model; no default guess",
-            budgets["model_policy"],
-        )
+        for key in (
+            "development_api_requests", "repository_paid_development_dispatchers",
+            "product_runtime_live_requests", "automatic_provider_retries", "repair_requests",
+        ):
+            self.assertEqual(0, budgets[key], key)
+        self.assertFalse(state["product_runtime_authorization"]["authorized"])
+        self.assertEqual(0, state["product_runtime_authorization"]["live_requests"])
 
-    def test_current_state_projects_offline_repair_and_cost_boundary(self) -> None:
+    def test_preserved_r1_foundation_is_recorded(self) -> None:
+        state = json.loads((ROOT / "docs" / "CONTROL_STATE.json").read_text(encoding="utf-8"))
+        preserved = state["preserved_foundation"]
+        self.assertEqual(79, preserved["pull_request"])
+        self.assertEqual("de26501958045b5f1dd80eb40ce8f8f1f8d9cf5f", preserved["reviewed_head"])
+        self.assertEqual(["F05", "F06", "F11"], preserved["accepted_bounded_findings"])
+
+    def test_current_state_projects_offline_recovery_and_cost_boundary(self) -> None:
         current = (ROOT / "CURRENT.md").read_text(encoding="utf-8")
         for token in (
-            "REPAIR — OFFLINE ONLY — M33.1 / ISSUE #69 / PR #79",
-            "Implementation PR:** #79",
-            "ChatGPT Codex Remote",
-            "Development API requests:** 0",
-            "Paid GitHub Codex dispatchers:** forbidden",
-            "Profile E request remains unspent",
+            "FXD-R0", "ISSUE #87 / PR #79", "OFFLINE ONLY",
+            "**Implementation PR:** #79", "**Selected builder:** Claude Code",
+            "**Product-runtime requests:** 0", "**Development API requests:** 0",
             "**CONTINUE**",
         ):
             self.assertIn(token, current)
-        self.assertNotIn("Implementation PR:** none yet", current)
-        self.assertNotIn("**HOLD**", current)
+        for stale in ("Implementation PR:** none yet", "**HOLD**", "M33.1 / ISSUE #69"):
+            self.assertNotIn(stale, current)
 
-    def test_all_current_projections_show_offline_repair_and_existing_pr(self) -> None:
-        expected = {
-            "README.md": (
-                "REPAIR — OFFLINE ONLY",
-                "draft PR #79",
-                "ChatGPT Codex Remote",
-            ),
-            "docs/FOREMAN_SETUP.md": (
-                "REPAIR — OFFLINE ONLY",
-                "**Implementation PR:** #79",
-                "ChatGPT Codex Remote",
-            ),
-            "docs/MILESTONE_CONTRACT.md": (
-                "**Implementation PR:** #79",
-                "**Status:** REPAIR — OFFLINE ONLY",
-                "Development/API cost boundary",
-            ),
-        }
-        for relative, tokens in expected.items():
+    def test_all_current_projections_name_active_gate_and_selected_builder(self) -> None:
+        for relative in (
+            "README.md", "AGENTS.md", "CLAUDE.md", "docs/FOREMAN_SETUP.md",
+            "docs/MILESTONE_CONTRACT.md", "docs/OPERATOR_PROTOCOL.md", "docs/FXD_RECOVERY_GATE_00.md",
+        ):
             text = (ROOT / relative).read_text(encoding="utf-8")
-            for token in tokens:
+            for token in ("FXD-R0", "#87", "#79"):
                 self.assertIn(token, text, relative)
+        for relative in ("README.md", "AGENTS.md", "docs/FOREMAN_SETUP.md", "docs/MILESTONE_CONTRACT.md"):
+            self.assertIn("Claude Code", (ROOT / relative).read_text(encoding="utf-8"), relative)
 
     def test_actual_github_workflows_have_no_paid_development_route(self) -> None:
         errors: list[str] = []
@@ -260,10 +302,13 @@ class GovernanceResetTests(unittest.TestCase):
             "592876fefde118b5325bbb5b4949eeb1490cdf6c",
             state["accepted_reset"]["merge_commit"],
         )
-        m32 = next(item for item in state["superseded"] if item.get("number") == 32)
-        self.assertEqual(57, m32["issue"])
+        self.assertEqual("historical_foundation", state["accepted_reset"]["authority"])
+        superseded = state["superseded_execution_authority"]
+        m32 = next(item for item in superseded if item.get("issue") == 57)
         self.assertEqual(54, m32["pull_request"])
-        self.assertEqual("closed_unmerged_preserve_for_salvage", m32["disposition"])
+        self.assertEqual("closed_unmerged_selective_salvage_only", m32["disposition"])
+        m33_1 = next(item for item in superseded if item.get("issue") == 69)
+        self.assertEqual("historical_foundation_preserve_evidence", m33_1["disposition"])
 
     def test_real_repository_selector_fails_closed_under_review_control(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -330,9 +375,17 @@ class GovernanceResetTests(unittest.TestCase):
         protocol = (ROOT / "docs" / "OPERATOR_PROTOCOL.md").read_text(encoding="utf-8")
         self.assertIn("Review-Control decides and reviews", protocol)
         self.assertIn("ChatGPT Codex Remote", protocol)
-        self.assertIn("Permanent API and cost boundary", protocol)
-        self.assertIn("Codex never merges or advances itself", protocol)
-        self.assertIn("Claude / Anthropic is not part", protocol)
+        self.assertIn("Claude Code", protocol)
+        self.assertIn("Exactly one builder is selected for one active gate", protocol)
+        self.assertIn("The unselected builder must not modify the active implementation branch", protocol)
+        self.assertIn("It does not choose new scope, merge, advance, deploy, or approve its own work", protocol)
+        self.assertIn("repository paid development dispatchers: forbidden", protocol)
+        self.assertIn(
+            "No coding-agent subscription session implicitly authorizes a product-runtime API call", protocol,
+        )
+        # Claude Code implementation authority never makes Anthropic a runtime/review path.
+        claude = (ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+        self.assertIn("does not make Anthropic/Claude an FXD product-runtime provider", claude)
 
 
 if __name__ == "__main__":

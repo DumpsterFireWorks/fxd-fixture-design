@@ -25,7 +25,7 @@ Allowed implementation surfaces are Codex or Claude Code, selected explicitly in
 - PR: #79
 - Branch: `agent/m33-1-native-product-reconstruction`
 - State: REPAIR / OFFLINE ONLY
-- Selected builder: ChatGPT Codex Remote
+- Selected builder: Claude Code (development model label: Claude Opus 5.5)
 - Product-runtime requests: 0
 - Work order: `docs/FXD_RECOVERY_GATE_00.md`
 
