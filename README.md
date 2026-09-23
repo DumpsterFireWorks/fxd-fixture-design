@@ -22,6 +22,9 @@ Owner direction on September 23, 2026 resumed bounded offline development using 
 
 Current machine authority is [docs/CONTROL_STATE.json](docs/CONTROL_STATE.json).
 
+<!-- FXD-MILESTONE-STATE: docs/MILESTONE_STATE.json -->
+The frozen pre-reset registry remains at [`docs/MILESTONE_STATE.json`](docs/MILESTONE_STATE.json) as byte-preserved historical evidence. It cannot select current work, override `docs/CONTROL_STATE.json`, or reopen closed work.
+
 ## Current work
 
 PR #79 contains previously reviewed foundation repairs that must be preserved.
@@ -83,7 +86,7 @@ Repository health command:
 bash scripts/ci.sh
 ```
 
-Current main is known to fail the stale control-state validator recorded in Issue #27. Repairing that mismatch is intentionally part of FXD-R0.
+FXD-R0 repairs the stale control-state validator recorded in Issue #27: `scripts/validate_control_state.py` now checks the meaning of current recovery authority (active gate, selected builder, zero-request budgets, retired paid dispatchers) instead of hard-coded revision-4 history.
 
 Passing software checks does not prove fixture practicality.
 
