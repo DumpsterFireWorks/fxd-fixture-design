@@ -4,9 +4,11 @@
 
 FXD is an intelligent industrial fixture-design platform. It begins with weld fixturing for fabricated assemblies and is intended to expand later to gauges, nests, inspection tooling, assembly fixtures, and other workholding.
 
-The defining workflow is:
+The normal user-facing workflow is:
 
-> Give FXD the product assembly, manufacturing intent, and approved fixture precedents; receive a practical, editable fixture strategy authored into real geometry, deterministically challenged, and presented for qualified engineering approval.
+> **Import the assembly → set it down → confirm welds and genuinely unknown job requirements → FXD designs a practical fixture → inspect/edit → validate/export.**
+
+Internally, FXD may use product reconstruction, constraints, datum systems, coordinate frames, typed fixture strategy, and structured precedents. The normal user should not need academic fixture-engineering vocabulary to operate the product successfully.
 
 ## The product problem
 
@@ -89,6 +91,8 @@ Where evidence supports it, the model should identify:
 
 When ambiguity materially changes fixture design, FXD asks a focused question or blocks. It does not design confidently around unknown meaning.
 
+Unknown information must block only decisions that actually depend on it. FXD must not turn limited automatic recognition into a broad questionnaire when exact geometry is still usable for the current decision.
+
 ## Fixture precedents
 
 Chris's fixture library is a high-value private product asset, but geometry alone is not enough.
@@ -111,14 +115,15 @@ Private geometry and proprietary shop knowledge remain local and separately cont
 
 Before broad scope, FXD must prove one representative fixture from end to end:
 
-1. trustworthy product reconstruction;
-2. one intentional live OpenAI strategy request using an explicitly selected high-capability model;
-3. typed supports, locators, clamps/reactions, base/construction, loading/unloading, and access intent;
-4. real OCP authoring driven by that strategy;
-5. deterministic validation;
-6. at most one bounded AI repair cycle;
-7. persistence and visible provenance;
-8. qualified human review answering: **Would I actually build and use this?**
+1. trustworthy product reconstruction and confirmed manufacturing/weld intent;
+2. physical validation capable of rejecting deliberately bad fixtures at the real failure layer;
+3. offline/manual and synthetic-provider proof that a strict typed strategy actually drives OCP geometry;
+4. one separately authorized live OpenAI strategy request using an explicitly selected high-capability model;
+5. typed supports, locators, clamps/reactions, base/construction, loading/unloading, and access intent;
+6. real OCP authoring driven by that strategy;
+7. deterministic validation and at most one bounded AI repair cycle;
+8. persistence and visible provenance;
+9. qualified human review answering: **Would I actually build and use this?**
 
 A fixture that is merely geometrically valid fails this proof.
 

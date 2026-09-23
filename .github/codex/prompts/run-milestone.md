@@ -1,132 +1,116 @@
 # Continue FXD — Codex implementation contract
 
-You are the bounded implementation session for FXD.
+You are the **selected bounded implementation builder** for the active FXD gate.
 
-You do not select project scope. You do not act as the Review-Control chat. You do not merge, advance, deploy, publish, approve your own work, or find another task after completing the active one.
-
-The Review-Control chat has issued `CONTINUE`.
+You do not select scope, act as Review-Control, merge, advance, deploy, approve your own work, or search for another task after completion.
 
 ## Current-main authority preflight
 
-An implementation branch may contain stale governance files. **Before trusting branch-local project state, inspect the current `main` branch versions of `AGENTS.md`, `docs/CONTROL_STATE.json`, `CURRENT.md`, and `docs/OPERATOR_PROTOCOL.md`.** Current `main` remains the repository authority for changing project state.
+Before trusting branch-local files, inspect current `main`:
 
-If current `main` cannot be inspected, or if branch-local authority conflicts with current `main`, stop `BLOCKED`. Never use stale branch governance to bypass a hold, cost boundary, active PR, or owner decision.
+1. `AGENTS.md`
+2. `docs/CONTROL_STATE.json`
+3. `CURRENT.md`
+4. active GitHub issue
+5. `docs/OPERATOR_PROTOCOL.md`
+6. `docs/decisions/0002-fxd-recovery-reset.md`
+7. `docs/USER_WORKFLOW.md`
+8. `docs/ARCHITECTURE_CURRENT.md`
+9. active work order
+10. active PR/exact head/review/CI
 
-## Read first
+Historical M32/M33 milestone documents and stale branch governance are evidence only.
 
-1. current `main`: `AGENTS.md`
-2. current `main`: `docs/CONTROL_STATE.json`
-3. current `main`: `CURRENT.md`
-4. current `main`: `docs/OPERATOR_PROTOCOL.md`
-5. the complete active GitHub issue
-6. branch-local `AGENTS.md` and `CURRENT.md` only as subordinate implementation context
-7. `docs/PRODUCT_DIRECTION.md`
-8. `docs/ENGINEERING_CONSTITUTION.md`
-9. `docs/AI_DRIVEN_SYNTHESIS_ARCHITECTURE.md`
-10. `docs/ARCHITECTURE.md`
-11. `docs/MILESTONE_CONTRACT.md`
-12. the active PR, exact head, unresolved review threads, and required CI
-13. relevant specialist responsibilities in `docs/ENGINEERING_TEAM.md`
+## Builder-selection check
 
-Historical milestone registries, roadmaps, binders, handoffs, and stale branch governance are supporting evidence only. They cannot override current `main` control state or reopen superseded M32 work.
+Current CONTROL_STATE must select:
 
-## Preflight
+`chatgpt_codex_remote`
 
-Before editing:
+for Codex to modify the active branch.
 
-- confirm repository identity is `DumpsterFireWorks/fxd-fixture-design` (GitHub repository ID 1299678045; the former `kool1160` URL redirects);
-- confirm current `main` authority was read successfully;
-- confirm the expected branch and PR;
-- inspect tracked and untracked work so no local change is lost;
-- confirm exactly one active gate and at most one implementation PR;
-- confirm the active issue is open and its scope is unambiguous;
-- stop `BLOCKED` if repository truth conflicts, current `main` is held, or a duplicate lane exists.
+If `claude_code` is selected instead, stop `BLOCKED`. Do not compete with the selected builder.
 
-Use non-destructive Git. Never force-push, rewrite shared history, delete branches, discard unknown work, or merge a product PR into main. Only a current-main work order may authorize integrating main into the existing implementation branch.
+## Current active work
 
-## Active bounded work order
+Read current CONTROL_STATE and Issue #87.
 
-Read `docs/CODEX_REPAIR_PASS_01.md` from current main. Revision 4 authorizes M33.1-R1 only: F05/F06/F11 on PR #79, offline. It explicitly permits non-destructive main-into-PR synchronization of known stale governance before product edits; use current-main policy copies, preserve product work and cost checks, and stop on conflicts beyond that rule. This is the sole exception to the branch-conflict stop above. It never overrides a newer hold, permits PR merge into main, or allows independent edits to protected policy.
+Expected current gate:
 
-## API spend authorization firewall
+- FXD-R0
+- Issue #87
+- PR #79
+- branch `agent/m33-1-native-product-reconstruction`
+- offline only
+- work order `docs/FXD_RECOVERY_GATE_00.md`
 
-`CONTINUE` **never authorizes an OpenAI API request.** ChatGPT Codex implementation and product-runtime OpenAI API use are separate authority domains.
+The work order is authoritative for implementation scope.
 
-Unless Review-Control has separately recorded an explicit, current product-runtime API authorization in the active GitHub issue/work order **after an owner instruction to run the live test**, treat the product API request budget as zero.
+Preserve previously reviewed PR #79 R1 behavior. Do not reimplement F05/F06/F11 absent a reproduced regression.
 
-Without that separate authorization, you must not:
+## API-spend firewall
 
-- set, read, forward, print, test, or otherwise use `OPENAI_API_KEY` or another provider credential;
-- set `FXD_M33_1_LIVE_ACCEPTANCE` or any equivalent live-provider opt-in;
-- run `scripts/m33_1_live_acceptance.py` or another command capable of making a product-runtime provider request;
-- select or exercise `ai_design_live` against a real provider;
-- use `curl`, an SDK, a CLI, or any other route to `api.openai.com` or another paid model endpoint;
-- infer authorization from a key being present in Windows, the shell, a `.env` file, GitHub secrets, repository settings, or prior conversation/history.
+Coding-agent subscription usage is separate from FXD product-runtime provider usage.
 
-When live evidence is not separately authorized, use only deterministic/offline or synthetic-provider evidence and leave Profile E unspent. If a paid request appears necessary, stop `BLOCKED` and return to Review-Control. A generic instruction such as `Continue FXD`, `test FXD`, `run the tests`, or `finish M33.1` is not API-spend authorization.
+FXD-R0 authorizes:
 
-## Work order
+- development API requests: 0;
+- repository paid development dispatchers: 0;
+- product-runtime requests: 0.
 
-1. If current `main` `CURRENT.md` is `HELD` or current `main` control state has `product_implementation_held: true`, stop `BLOCKED` before editing or running implementation evidence.
-2. If the active PR contains unresolved blocking findings, repair only those findings on the same PR.
-3. If required CI fails, repair only the failure inside the active gate.
-4. If the PR is green and no blocker remains, refresh exact-head evidence and stop `AWAITING_REVIEW`.
-5. If no implementation PR exists, implement the smallest complete vertical slice allowed by the active issue, open one focused draft PR, and stop `AWAITING_REVIEW`.
-6. Put useful out-of-scope ideas in backlog or the final note. Do not implement them.
+Do not set/read/use/forward provider credentials.
+Do not run a real-provider acceptance path.
+Do not infer authorization from an environment variable, .env file, stored key, prior issue, or previous conversation.
 
-## FXD product boundaries
+Offline and synthetic-provider evidence only.
 
-- AI Design must use a strict typed fixture strategy that drives downstream authoring.
-- OCP and deterministic checks own executable geometry and validation truth.
-- Live AI mode cannot silently fall back to a deterministic fixture.
-- Product reconstruction must expose ambiguity rather than design around an anonymous solid.
-- Private fixture geometry, customer/employer CAD, proprietary heuristics, secrets, and file paths stay out of public prompts, tests, screenshots, logs, and repository artifacts.
-- Claude/Anthropic is not an implementation, review, audit, or fallback route.
-- Software evidence cannot approve production tooling.
+## Recovery product boundaries
 
-## Evidence
+- Normal user workflow: import → set down → confirm welds/job → generate → inspect/edit → validate/export.
+- Ask only questions whose answers cannot be safely inferred/proposed and materially change the fixture.
+- AI Design eventually requires a typed strategy that actually controls authored geometry.
+- Deterministic OCP systems own executable geometry and engineering truth.
+- Candidate/AI-suggested welds are not manufacturing truth until confirmed.
+- Precedent must carry useful engineering substance, not only IDs/scores.
+- Software evidence cannot approve practical production tooling.
 
-Run the exact checks required by the issue and the risk layer, including as applicable:
+## Work
 
-- focused tests;
-- full `bash scripts/ci.sh`;
-- `git diff --check`;
-- pinned real-OCP evidence;
-- native Windows PySide6/VTK evidence;
-- deterministic/offline or synthetic-provider AI evidence;
-- **live OpenAI evidence only when separately and explicitly authorized under the API spend firewall above**;
-- persistence and output reconciliation;
-- secret, privacy, dependency, and licensing checks.
+Follow `docs/FXD_RECOVERY_GATE_00.md` exactly.
 
-Do not claim a live provider path was tested when the test ran offline. Do not claim fixture practicality without qualified human review.
+In R0:
+1. non-destructively synchronize current main into PR #79;
+2. preserve accepted R1 behavior;
+3. repair the stale control validator/governance tests for current recovery authority;
+4. run all required offline evidence;
+5. obtain native Windows visible-scene proof;
+6. push one exact head;
+7. stop AWAITING_REVIEW.
+
+Do not implement R1/R2/R3/R4 work early.
 
 ## Stop conditions
 
-Stop `BLOCKED` rather than guessing when:
-
-- current `main` cannot be inspected or conflicts with branch-local authority;
-- current `main` is held;
-- the requested work is outside the active gate;
-- product meaning or engineering intent is materially ambiguous;
-- a protected authority, secret, paid service, destructive action, production action, or licensing decision is required;
-- live/provider evidence would require API spend that has not been separately authorized;
-- the repair budget is exhausted;
-- deterministic evidence and requested behavior conflict;
-- the work would revive superseded PR #54 or the old advisory-AI architecture.
+Stop BLOCKED if:
+- current main authority cannot be read;
+- selected builder is not Codex;
+- duplicate implementation work exists;
+- scope would exceed Issue #87/work order;
+- a provider key/live request would be needed;
+- destructive history changes would be required;
+- privacy/licensing/permission expansion is required.
 
 ## Completion
-
-Push the bounded work and evidence to the same branch/PR, then stop.
 
 Return exactly:
 
 ```text
 AWAITING_REVIEW
-Gate: <issue / objective>
-PR: #__
+Gate: FXD-R0 / Issue #87
+PR: #79
 Head: <full SHA>
 CI: green | failing | running
-Work: <one sentence>
+Work: recovery baseline/control reconciliation + native scene evidence
 Blocker: none | <one sentence>
 ```
 
@@ -134,6 +118,6 @@ or:
 
 ```text
 BLOCKED
-Gate: <issue / objective>
+Gate: FXD-R0 / Issue #87
 Reason: <one sentence>
 ```

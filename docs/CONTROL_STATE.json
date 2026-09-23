@@ -1,113 +1,129 @@
 {
   "schema_version": "fxd-control-state-v1",
-  "revision": 4,
-  "updated_at_utc": "2026-09-07T16:52:42Z",
-  "authority_issue": 83,
+  "revision": 8,
+  "updated_at_utc": "2026-09-23T15:00:00Z",
+  "authority_issue": 87,
   "state": "REPAIR",
   "product_implementation_held": false,
   "hold": {
     "authority": "owner",
-    "reason": "cost_control",
-    "since_utc": "2026-08-10T14:26:00Z",
-    "resume_condition": "Explicit owner instruction after Review-Control verifies the ChatGPT Codex Remote-only development route and repository API cost guardrails.",
-    "lifted_by_issue": 83,
-    "disposition": "Historical cost-control hold; offline implementation resumed only for pass M33.1-R1. Product API remains unauthorized."
+    "reason": "owner_project_priority",
+    "since_utc": "2026-09-12T12:49:43.121Z",
+    "lifted_at_utc": "2026-09-23T10:50:00Z",
+    "lifted_by_issue": 87,
+    "disposition": "Owner resumed bounded offline FXD recovery on 2026-09-23. The prior portfolio hold is historical; live product-runtime use remains separately unauthorized."
   },
   "accepted_reset": {
     "issue": 66,
     "pull_request": 67,
     "merge_commit": "592876fefde118b5325bbb5b4949eeb1490cdf6c",
-    "decision": "docs/decisions/0001-ai-driven-fixture-synthesis-reset.md"
+    "decision": "docs/decisions/0001-ai-driven-fixture-synthesis-reset.md",
+    "authority": "historical_foundation"
   },
-  "activation": {
-    "issue": 70,
-    "purpose": "Activate the first bounded product gate after the accepted Issue #66 reset."
+  "recovery_reset": {
+    "issue": 87,
+    "parent_plan_issue": 85,
+    "reassessment": "docs/FXD_REASSESSMENT_2026-09-22.md",
+    "reassessment_commit": "ca9b83e4dfd5855edaff1f69cf76fa7a361c6521",
+    "decision": "docs/decisions/0002-fxd-recovery-reset.md",
+    "roadmap": "docs/FXD_RECOVERY_ROADMAP.md"
   },
   "active_gate": {
     "lane": "product",
-    "milestone": 33,
-    "id": "M33.1",
-    "issue": 69,
+    "id": "FXD-R0",
+    "issue": 87,
     "pull_request": 79,
     "branch": "agent/m33-1-native-product-reconstruction",
-    "expected_pr_state": "open_draft_repair_offline_only",
-    "objective": "Create a source-SHA-bound native product reconstruction and make live OpenAI design mode explicit, undeniable, and fail-closed without silent deterministic fallback."
+    "expected_pr_state": "open_draft_recovery_offline_only",
+    "objective": "Preserve accepted R1 foundation work, reconcile current recovery authority and validators, obtain native Windows visible-scene evidence, and leave PR #79 merge-ready without any live provider request."
   },
   "development_execution": {
-    "implementation_surface": "chatgpt_codex_remote",
+    "allowed_subscription_builders": [
+      "chatgpt_codex_remote",
+      "claude_code"
+    ],
+    "selected_builder": "claude_code",
+    "one_builder_per_gate": true,
     "repository_api_key_for_development": false,
     "github_paid_codex_dispatchers_allowed": false,
-    "product_runtime_api_requires_explicit_review_control_authorization": true
+    "product_runtime_api_requires_explicit_review_control_authorization": true,
+    "builder_cannot_independently_approve_own_work": true,
+    "default_builder": "claude_code",
+    "owner_builder_preference": "Use Claude Code for FXD implementation by default unless a later explicit owner/Review-Control decision selects another allowed builder.",
+    "selected_development_model_label": "Claude Opus 5.5",
+    "selected_development_model_note": "Owner-selected Claude Code development model label only; no Anthropic API model identifier is assumed and no API route is authorized."
   },
-  "superseded": [
+  "preserved_foundation": {
+    "pull_request": 79,
+    "reviewed_head": "de26501958045b5f1dd80eb40ce8f8f1f8d9cf5f",
+    "accepted_bounded_findings": [
+      "F05",
+      "F06",
+      "F11"
+    ],
+    "note": "Preserve reviewed R1 behavior; do not reimplement absent a reproduced regression."
+  },
+  "superseded_execution_authority": [
     {
-      "kind": "product_milestone",
-      "number": 32,
+      "issue": 69,
+      "gate": "M33.1",
+      "disposition": "historical_foundation_preserve_evidence"
+    },
+    {
+      "issue": 68,
+      "milestone": "M33",
+      "disposition": "historical_product_reset_preserve_evidence"
+    },
+    {
       "issue": 57,
       "pull_request": 54,
-      "disposition": "closed_unmerged_preserve_for_salvage"
-    },
-    {
-      "kind": "governance_issue",
-      "issue": 59,
-      "disposition": "closed_superseded"
-    },
-    {
-      "kind": "governance_issue",
-      "issue": 63,
-      "disposition": "closed_superseded"
+      "disposition": "closed_unmerged_selective_salvage_only"
     }
   ],
-  "product_milestone": {
-    "number": 33,
-    "issue": 68,
+  "product_recovery": {
+    "parent_issue": 85,
     "status": "ACTIVE",
-    "title": "AI-Driven Fixture Synthesis Proof",
     "active_gate": {
-      "id": "M33.1",
-      "issue": 69,
+      "id": "FXD-R0",
+      "issue": 87,
       "status": "REPAIR",
-      "title": "Native product reconstruction and explicit live-AI mode"
-    }
+      "title": "Recovery baseline and preserved R1 integration"
+    },
+    "next_planned_gate": "FXD-R1 — simple pose, job, and weld intent"
   },
   "budgets": {
     "development_api_requests": 0,
-    "repository_paid_codex_dispatchers": 0,
-    "live_requests_per_acceptance_run": 1,
+    "repository_paid_development_dispatchers": 0,
+    "product_runtime_live_requests": 0,
     "automatic_provider_retries": 0,
     "repair_requests": 0,
-    "request_timeout_seconds_max": 60,
-    "model_policy": "explicitly configured high-capability OpenAI model; no default guess"
+    "model_policy": "No product-runtime model selected or authorized in FXD-R0."
   },
   "operator_protocol": "docs/OPERATOR_PROTOCOL.md",
   "current_human_surface": "CURRENT.md",
   "legacy_milestone_registry": {
     "path": "docs/MILESTONE_STATE.json",
     "git_blob_sha": "f667797f1ea59e508ebd46b97cc89061f56b1c1a",
-    "authority": "historical_only",
-    "note": "The pre-reset registry is preserved byte-for-byte as historical evidence and cannot select current work."
+    "authority": "historical_only"
   },
-  "next_valid_action": "CONTINUE. M33.1-R1 only on PR #79: synchronize current main, repair F05/F06/F11 offline, and stop AWAITING_REVIEW. Profile E unauthorized; no product PR merge or M33.2 advancement.",
   "implementation_authorization": {
     "authority": "owner",
-    "issue": 83,
-    "date": "2026-09-07",
+    "issue": 87,
+    "date": "2026-09-23",
     "mode": "offline_only",
-    "pass_id": "M33.1-R1",
-    "work_order": "docs/CODEX_REPAIR_PASS_01.md",
-    "findings": [
-      "F05",
-      "F06",
-      "F11"
-    ],
+    "pass_id": "FXD-R0",
+    "work_order": "docs/FXD_RECOVERY_GATE_00.md",
+    "selected_builder": "claude_code",
     "stop_state": "AWAITING_REVIEW",
     "synchronize_current_main": true,
-    "product_merge_authorized": false,
-    "next_gate_authorized": false
+    "product_merge_authorized_after_independent_acceptance": true,
+    "next_gate_authorized": false,
+    "selected_development_model_label": "Claude Opus 5.5"
   },
   "product_runtime_authorization": {
     "authorized": false,
     "live_requests": 0,
-    "reason": "No separate owner instruction to run a live test; Profile E remains unspent."
-  }
+    "reason": "FXD-R0 is offline only. First meaningful live strategy proof is deferred to FXD-R3 and requires separate owner/Review-Control authorization."
+  },
+  "next_valid_action": "CONTINUE FXD-R0 / Issue #87 on PR #79 using Claude Code with the owner-selected Claude Opus 5.5 development model. Synchronize current main, preserve F05/F06/F11, repair control validator/tests, run full offline evidence and native Windows visible-scene proof, then stop AWAITING_REVIEW. Development API requests and product-runtime requests remain 0."
 }
