@@ -55,6 +55,7 @@ Claude Code implementation authority never makes Claude/Anthropic an FXD product
 - **PR #79**
 - **Branch:** `agent/m33-1-native-product-reconstruction`
 - **Selected builder:** Claude Code
+- **Development model:** Claude Opus 5.5
 - **Mode:** OFFLINE ONLY
 - **Work order:** `docs/FXD_RECOVERY_GATE_00.md`
 
