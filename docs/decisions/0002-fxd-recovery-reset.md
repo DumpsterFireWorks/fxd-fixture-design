@@ -118,6 +118,8 @@ as its implementation surface.
 
 Exactly one builder is selected per active gate. The unselected builder must not modify the active branch. A builder cannot independently review or approve its own work.
 
+Owner direction on September 23, 2026 sets **Claude Code as the default FXD implementation builder** and **Claude Opus 5.5 as the default development model** unless a later explicit owner/Review-Control decision changes the selected builder/model. This is development configuration only; it does not select Anthropic as an FXD product-runtime provider or authorize an Anthropic API route.
+
 Claude/Anthropic is not an FXD product-runtime provider, independent review path, fallback, or tie-break route merely because Claude Code may be selected to implement a gate.
 
 ## Cost boundary
