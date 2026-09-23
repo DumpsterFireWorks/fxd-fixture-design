@@ -1,7 +1,7 @@
 {
   "schema_version": "fxd-control-state-v1",
-  "revision": 6,
-  "updated_at_utc": "2026-09-23T10:50:00Z",
+  "revision": 7,
+  "updated_at_utc": "2026-09-23T14:56:00Z",
   "authority_issue": 87,
   "state": "REPAIR",
   "product_implementation_held": false,
@@ -42,12 +42,14 @@
       "chatgpt_codex_remote",
       "claude_code"
     ],
-    "selected_builder": "chatgpt_codex_remote",
+    "selected_builder": "claude_code",
     "one_builder_per_gate": true,
     "repository_api_key_for_development": false,
     "github_paid_codex_dispatchers_allowed": false,
     "product_runtime_api_requires_explicit_review_control_authorization": true,
-    "builder_cannot_independently_approve_own_work": true
+    "builder_cannot_independently_approve_own_work": true,
+    "default_builder": "claude_code",
+    "owner_builder_preference": "Use Claude Code for FXD implementation by default unless a later explicit owner/Review-Control decision selects another allowed builder."
   },
   "preserved_foundation": {
     "pull_request": 79,
@@ -109,7 +111,7 @@
     "mode": "offline_only",
     "pass_id": "FXD-R0",
     "work_order": "docs/FXD_RECOVERY_GATE_00.md",
-    "selected_builder": "chatgpt_codex_remote",
+    "selected_builder": "claude_code",
     "stop_state": "AWAITING_REVIEW",
     "synchronize_current_main": true,
     "product_merge_authorized_after_independent_acceptance": true,
@@ -120,5 +122,5 @@
     "live_requests": 0,
     "reason": "FXD-R0 is offline only. First meaningful live strategy proof is deferred to FXD-R3 and requires separate owner/Review-Control authorization."
   },
-  "next_valid_action": "CONTINUE FXD-R0 / Issue #87 on PR #79 using the selected subscription builder. Synchronize current main, preserve F05/F06/F11, repair control validator/tests, run full offline evidence and native Windows visible-scene proof, then stop AWAITING_REVIEW. Product-runtime requests remain 0."
+  "next_valid_action": "CONTINUE FXD-R0 / Issue #87 on PR #79 using Claude Code as the selected subscription builder. Synchronize current main, preserve F05/F06/F11, repair control validator/tests, run full offline evidence and native Windows visible-scene proof, then stop AWAITING_REVIEW. Product-runtime requests remain 0."
 }
